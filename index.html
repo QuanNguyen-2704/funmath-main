@@ -89,7 +89,21 @@
             text-shadow: 0 3px 0 rgba(0,0,0,0.12);
         }
 
-        .mascot { width: 240px; max-width: 65vw; height: auto; margin: 12px auto 4px; display: block; }
+        /* New Hero Image Styling */
+        .hero-image {
+            width: 100%;
+            max-width: 650px;
+            height: auto;
+            margin: 20px auto 15px;
+            display: block;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+        }
+        .hero-image:hover {
+            transform: scale(1.02);
+        }
 
         header p.subtitle {
             margin: 6px auto 0;
@@ -279,8 +293,7 @@
             outline-offset: 3px;
         }
 
-        /* optional style for a card that isn't ready to play yet — */
-        /* just add class="card future" to any card block           */
+        /* optional style for a card that isn't ready to play yet */
         .card.future {
             box-shadow: none;
             border: 3px dashed #C9D1DC;
@@ -301,6 +314,7 @@
             header h1 { font-size: 2rem; }
             header p.subtitle { font-size: 1rem; }
             .section-head { flex-direction: column; align-items: flex-start; }
+            .hero-image { max-width: 90%; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -312,6 +326,7 @@
 <body>
 
     <header id="top">
+        <!-- Floating shapes -->
         <div class="shape shape-circle s1"></div>
         <div class="shape shape-star s3"></div>
         <div class="shape shape-triangle s2"></div>
@@ -322,47 +337,20 @@
             <span class="badge">🧑‍🏫 Presented by Teacher Quan Nguyen</span>
             <h1>Math Adventure Hub</h1>
 
-            <!-- mascot: two mirror-image characters, the friendly face of the site -->
-            <svg class="mascot" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <line x1="160" y1="8" x2="160" y2="152" stroke="#ffffff" stroke-width="3" stroke-dasharray="6 9" opacity="0.85"/>
-                <g>
-                    <circle cx="95" cy="85" r="52" fill="#FFD93D"/>
-                    <ellipse cx="148" cy="58" rx="10" ry="22" fill="#FFD93D" transform="rotate(-25 148 58)"/>
-                    <circle cx="78" cy="76" r="8" fill="#2D3142"/>
-                    <circle cx="112" cy="76" r="8" fill="#2D3142"/>
-                    <circle cx="75.5" cy="73.5" r="2.6" fill="#ffffff"/>
-                    <circle cx="109.5" cy="73.5" r="2.6" fill="#ffffff"/>
-                    <path d="M70 99 Q95 116 120 99" stroke="#2D3142" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <circle cx="58" cy="93" r="8" fill="#FF6B6B" opacity="0.5"/>
-                    <circle cx="132" cy="93" r="8" fill="#FF6B6B" opacity="0.5"/>
-                    <polygon points="150,36 152.9,42.9 159.5,42.9 153.8,47.9 155.9,55.5 150,50.8 144.1,55.5 146.2,47.9 140.5,42.9 147.1,42.9" fill="#4ECDC4" stroke="#2D3142" stroke-width="1.2"/>
-                </g>
-                <g transform="translate(320,0) scale(-1,1)">
-                    <circle cx="95" cy="85" r="52" fill="#FFD93D"/>
-                    <ellipse cx="148" cy="58" rx="10" ry="22" fill="#FFD93D" transform="rotate(-25 148 58)"/>
-                    <circle cx="78" cy="76" r="8" fill="#2D3142"/>
-                    <circle cx="112" cy="76" r="8" fill="#2D3142"/>
-                    <circle cx="75.5" cy="73.5" r="2.6" fill="#ffffff"/>
-                    <circle cx="109.5" cy="73.5" r="2.6" fill="#ffffff"/>
-                    <path d="M70 99 Q95 116 120 99" stroke="#2D3142" stroke-width="5" fill="none" stroke-linecap="round"/>
-                    <circle cx="58" cy="93" r="8" fill="#FF6B6B" opacity="0.5"/>
-                    <circle cx="132" cy="93" r="8" fill="#FF6B6B" opacity="0.5"/>
-                    <polygon points="150,36 152.9,42.9 159.5,42.9 153.8,47.9 155.9,55.5 150,50.8 144.1,55.5 146.2,47.9 140.5,42.9 147.1,42.9" fill="#4ECDC4" stroke="#2D3142" stroke-width="1.2"/>
-                </g>
-            </svg>
+            <!-- New Beautiful Hero Landscape Image -->
+            <img src="math-adventure-hero.png" alt="Children exploring a magical math landscape" class="hero-image">
 
             <p class="subtitle">Games, puzzles, and tools to make math click!</p>
         </div>
     </header>
 
     <!-- ============ NAV MENU ============ -->
-    <!-- Add one <li> here for every new section you create below. -->
     <nav class="site-nav" aria-label="Math topics">
         <ul>
             <li><a href="#top">🏠 Home</a></li>
             <li><a href="#symmetry">🪞 Symmetry</a></li>
             <li><a href="#puzzles">🧩 Puzzles</a></li>
-            <!-- <li><a href="#your-section-id">🔺 Your Section</a></li> -->
+            <li><a href="#Strategy">🔺 Strategy</a></li>
         </ul>
     </nav>
 
@@ -380,6 +368,22 @@
                 </div>
 
                 <div class="grid">
+                    
+                    <!-- CARD: Carronade -->
+                    <div class="card">
+                        <div class="icon-badge">💥</div>
+                        <h3>Carronade (Solo)</h3>
+                        <p>Practice your spatial estimation by bouncing cannonballs across the fold to sink AI Winnie's ships!</p>
+                        <a href="carronade.html" class="btn">Play Now</a>
+                    </div>
+                    
+                    <!-- CARD: Multiplayer Carronade -->
+                    <div class="card">
+                        <div class="icon-badge">🏴‍☠️</div>
+                        <h3>Multiplayer Carronade</h3>
+                        <p>Challenge a friend to a cannon duel! Test your spatial estimation and mirror symmetry across the fold in real-time.</p>
+                        <a href="Carronade_Multiplayer.html" class="btn">Play Together</a>
+                    </div>
 
                     <!-- CARD: Symmetry Defense Game -->
                     <div class="card">
@@ -387,6 +391,14 @@
                         <h3>Symmetry Defense</h3>
                         <p>Battle a friend! Place and slide coins on a 4×4 grid to build lines of symmetry — or block theirs.</p>
                         <a href="symmetry-defense.html" class="btn">Play Now</a>
+                    </div>
+                    
+                    <!-- CARD: Multiplayer Symmetry Defense -->
+                    <div class="card">
+                        <div class="icon-badge">🎮</div>
+                        <h3>Multiplayer Showdown</h3>
+                        <p>Challenge a friend to Symmetry Defense and play together in real time.</p>
+                        <a href="Multiplayer_SD.html" class="btn">Play Together</a>
                     </div>
 
                     <!-- CARD: Folding Platform -->
@@ -396,51 +408,6 @@
                         <p>Doodle a wacky shape, drop in a mirror line, then fold the page to see if it matches perfectly.</p>
                         <a href="reflectional symmetry.html" class="btn">Start Folding</a>
                     </div>
-
-                    <!-- CARD: Multiplayer game -->
-                    <div class="card">
-                        <div class="icon-badge">🎮</div>
-                        <h3>Symmetry Defense Showdown</h3>
-                        <p>Challenge a friend to Symmetry Defense and play together in real time.</p>
-                        <a href="SymmetryDef_Multiplayer.html" class="btn">Play Together</a>
-                    </div>
-
-                    <!-- CARD: Rotational symmetry -->
-                    <div class="card">
-                        <div class="icon-badge">🍀</div>
-                        <h3>Rotational symmetry</h3>
-                        <p>Spinning fun shapes around and see how they recover..</p>
-                        <a href="rotational symmetry.html" class="btn">Play Together</a>
-                    </div>
-
-                    <!-- CARD: Carronade (Symmetry Cannon Game) -->
-                    <div class="card">
-                        <div class="icon-badge">⛵</div>
-                        <h3>Carronade</h3>
-                        <p>Fold the paper and fire cannonballs! Use reflectional symmetry to sink enemy pirate ships.</p>
-                        <a href="carronade.html" class="btn">Play Game</a>
-                    </div>
-
-                     <!-- CARD: Carronade Multiplayer (Symmetry Cannon Game) -->
-                    <div class="card">
-                        <div class="icon-badge">⛵</div>
-                        <h3>Carronade Multiplayer</h3>
-                        <p>Fire cannonballs! Use reflectional symmetry to sink enemy pirate ships.</p>
-                        <a href="Carronade_Multiplayer.html" class="btn">Play Game</a>
-                    </div>
-
-                    <!--
-                        ADD MORE SYMMETRY CARDS HERE!
-                        Copy one whole <div class="card"> ... </div> block from above,
-                        then change the emoji, title, description and href.
-
-                        <div class="card">
-                            <div class="icon-badge">🌟</div>
-                            <h3>New Game Title</h3>
-                            <p>A short, fun description of what this game or tool does.</p>
-                            <a href="your-file.html" class="btn">Play Now</a>
-                        </div>
-                    -->
 
                 </div>
             </div>
@@ -475,52 +442,34 @@
                         <a href="tic-tac-toe.html" class="btn">Play Now</a>
                     </div>
 
-                    <!--
-                        ADD MORE PUZZLE CARDS HERE! Same pattern as above:
-
-                        <div class="card">
-                            <div class="icon-badge">🌟</div>
-                            <h3>New Puzzle Title</h3>
-                            <p>A short, fun description of what this puzzle does.</p>
-                            <a href="your-file.html" class="btn">Play Now</a>
-                        </div>
-
-                        Not ready to launch yet? Add class="card future" for a
-                        dashed "coming soon" look instead.
-                    -->
-
                 </div>
             </div>
         </section>
 
-        
-            
-        <!--
-        ============ ADD A WHOLE NEW SECTION HERE ============
-            1. Add a matching <li><a href="#your-id">Emoji Name</a></li> to the nav menu above.
-            2. Copy the block below, give it a unique id, and fill in your cards.
-               Section background/accent colors auto-rotate — no need to pick colors by hand. -->
-
-            <section id="Strategy" class="section">
-                <div class="container">
-                    <div class="Strategic games">
-                        <span class="section-icon">🔺</span>
-                        <div>
-                            <h2>Plan and win</h2>
-                            <p>Strategic games</p>
-                        </div>
-                    </div>
-                    <div class="grid">
-                        <div class="card">
-                            <div class="icon-badge">🌟</div>
-                            <h3>Chess</h3>
-                            <p>Let's become the next Magnus Carlsen.</p>
-                            <a href="chess.html" class="btn">Play Now</a>
-                        </div>
+        <!-- ============ SECTION: STRATEGY ============ -->
+        <section id="Strategy" class="section">
+            <div class="container">
+                <div class="section-head">
+                    <span class="section-icon">🔺</span>
+                    <div>
+                        <h2>Plan and win</h2>
+                        <p>Common games that you play</p>
                     </div>
                 </div>
-            </section>
-        
+                
+                <div class="grid">
+                    
+                    <!-- CARD: Chess -->
+                    <div class="card">
+                        <div class="icon-badge">♟️</div>
+                        <h3>Chess</h3>
+                        <p>Let's become the next Magnus Carlsen. Master the board and outsmart your opponent!</p>
+                        <a href="chess.html" class="btn">Play Now</a>
+                    </div>
+                    
+                </div>
+            </div>
+        </section>
 
     </main>
 

@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation 24 | Math Adventure Hub</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%9E%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coral: #FF6B6B;   --coral-deep: #E14E56;
+            --teal: #4ECDC4;    --teal-deep: #2FA79E;
+            --purple: #A78BFA;  --purple-deep: #7C5CE0;
+            --green: #6BCB77;   --green-deep: #48A857;
+            --yellow: #FFD93D;
+            --ink: #2D3142;
+            --muted: #667085;
+            --bg-top: #EAF6FF;
+            --bg-bottom: #F5F0FF;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Quicksand', system-ui, sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            color: var(--ink);
+            margin: 0; padding: 0;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex; flex-direction: column; overflow-x: hidden;
+        }
+
+        /* Ambient Blobs */
+        body::before, body::after {
+            content: ""; position: fixed; width: 480px; height: 480px; border-radius: 50%;
+            filter: blur(70px); opacity: .25; z-index: -1;
+        }
+        body::before { background: var(--teal); top: -100px; left: -150px; }
+        body::after { background: var(--yellow); bottom: -100px; right: -150px; }
+
+        /* ---------- HEADER ---------- */
+        header {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px);
+            padding: 12px 30px; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(45, 49, 66, 0.05); position: sticky; top: 0; z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none; color: var(--ink); font-family: 'Baloo 2', sans-serif;
+            font-weight: 700; display: flex; align-items: center; gap: 8px;
+            background: white; padding: 8px 20px; border-radius: 999px;
+            box-shadow: 0 4px 0 rgba(45, 49, 66, 0.1); transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(45, 49, 66, 0.1); }
+        .back-btn:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(45, 49, 66, 0.1); }
+
+        header h1 { font-family: 'Baloo 2', sans-serif; margin: 0; font-size: 1.6rem; color: var(--purple-deep); text-align: center; }
+
+        /* ---------- MAIN APP AREA ---------- */
+        main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+
+        .dashboard {
+            background: white; padding: 15px 30px; border-radius: 999px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center;
+            gap: 20px; margin-bottom: 40px; width: 100%; max-width: 600px; flex-wrap: wrap;
+        }
+
+        .streak-badge { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem; color: var(--coral-deep); }
+        .target-badge { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 1.4rem; padding: 6px 24px; border-radius: 999px; background: var(--teal); color: white; box-shadow: 0 4px 0 var(--teal-deep); }
+
+        /* ---------- GAME PLAY AREA ---------- */
+        .game-area {
+            display: flex; flex-direction: column; align-items: center; gap: 40px; width: 100%;
+        }
+
+        .cards-container {
+            display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; min-height: 140px;
+        }
+
+        .number-card {
+            background: var(--card-bg); width: 100px; height: 130px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 3rem; color: var(--ink);
+            box-shadow: 0 8px 0 #E2E8F0, 0 15px 20px rgba(0,0,0,0.05);
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            user-select: none; border: 4px solid transparent;
+        }
+        .number-card:hover { transform: translateY(-6px); box-shadow: 0 14px 0 #E2E8F0, 0 20px 25px rgba(0,0,0,0.08); }
+        .number-card:active { transform: translateY(4px); box-shadow: 0 4px 0 #E2E8F0, 0 5px 10px rgba(0,0,0,0.05); }
+        
+        .number-card.selected {
+            border-color: var(--coral); color: var(--coral-deep); transform: translateY(-10px);
+            box-shadow: 0 18px 0 #E2E8F0, 0 20px 30px rgba(225, 78, 86, 0.2);
+        }
+
+        /* ---------- OPERATORS ---------- */
+        .operators {
+            display: flex; gap: 15px; background: white; padding: 15px 25px;
+            border-radius: 999px; box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        }
+
+        .op-btn {
+            width: 60px; height: 60px; border-radius: 50%; border: none;
+            background: var(--bg-top); color: var(--teal-deep);
+            font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: 2.2rem;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 4px 0 var(--teal); transition: all 0.2s ease;
+        }
+        .op-btn:hover { transform: translateY(-3px); box-shadow: 0 7px 0 var(--teal); background: #D9F1FF; }
+        .op-btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--teal); }
+        
+        .op-btn.selected {
+            background: var(--teal); color: white; transform: translateY(2px); box-shadow: 0 2px 0 var(--teal-deep);
+        }
+
+        /* ---------- CONTROLS ---------- */
+        .controls { margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        
+        .game-btn {
+            background: white; border: none; color: var(--ink); font-family: 'Baloo 2', sans-serif;
+            font-weight: 700; font-size: 1.1rem; padding: 12px 28px; border-radius: 999px; cursor: pointer;
+            box-shadow: 0 4px 0 rgba(45, 49, 66, 0.1); transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .game-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(45, 49, 66, 0.1); }
+        .game-btn:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(45, 49, 66, 0.1); }
+        
+        .game-btn.primary { background: var(--purple); color: white; box-shadow: 0 4px 0 var(--purple-deep); }
+        .game-btn.secondary { background: var(--yellow); color: var(--ink); box-shadow: 0 4px 0 #E5C337; }
+
+        /* ---------- CUSTOM MODAL ---------- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(45, 49, 66, 0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card {
+            background: white; border-radius: 30px; padding: 35px 30px; max-width: 420px; width: 90%; text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+        .modal-card h2 { font-family: 'Baloo 2', sans-serif; font-size: 2.2rem; margin: 0 0 10px; }
+        .modal-card p { color: var(--muted); font-size: 1.1rem; margin-bottom: 25px; }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.3rem; }
+            .number-card { width: 75px; height: 100px; font-size: 2.2rem; }
+            .op-btn { width: 50px; height: 50px; font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Hub
+        </a>
+        <h1>Operation 24</h1>
+        <div style="width: 80px;"></div>
+    </header>
+
+    <main>
+        <div class="dashboard">
+            <div class="streak-badge">🔥 Streak: <span id="streak-count">0</span></div>
+            <div class="target-badge">🎯 Target: 24</div>
+        </div>
+
+        <div class="game-area">
+            <div class="cards-container" id="cards-container">
+                <!-- Cards injected via JS -->
+            </div>
+
+            <div class="operators">
+                <button class="op-btn" data-op="+">+</button>
+                <button class="op-btn" data-op="-">−</button>
+                <button class="op-btn" data-op="*">×</button>
+                <button class="op-btn" data-op="/">÷</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="game-btn secondary" id="btn-reset">↩️ Undo / Reset</button>
+            <button class="game-btn primary" id="btn-skip">⏭️ Skip Puzzle</button>
+            <button class="game-btn" id="btn-rules">❓ How to Play</button>
+        </div>
+    </main>
+
+    <!-- Custom Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-card">
+            <h2 id="modal-title">Title</h2>
+            <p id="modal-desc">Message</p>
+            <button class="game-btn primary" style="margin: 0 auto;" id="modal-close-btn">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // --- PUZZLE DATA (Guaranteed to have whole-number solutions) ---
+        const puzzleBank = [
+            [1, 2, 3, 4], [2, 3, 4, 8], [2, 2, 3, 8], [3, 3, 4, 6], [1, 2, 6, 6],
+            [2, 4, 4, 8], [2, 3, 5, 6], [3, 4, 5, 7], [1, 4, 5, 6], [2, 3, 6, 9],
+            [4, 6, 8, 9], [3, 5, 7, 8], [1, 2, 7, 9], [2, 4, 5, 8], [3, 4, 6, 8]
+        ];
+
+        // --- GAME STATE ---
+        let currentPuzzle = []; // The original 4 numbers
+        let currentCards = [];  // The active numbers on the board
+        let selectedCardIndex = null;
+        let selectedOperator = null;
+        let streak = 0;
+
+        // --- DOM ELEMENTS ---
+        const cardsContainer = document.getElementById('cards-container');
+        const opBtns = document.querySelectorAll('.op-btn');
+        const streakEl = document.getElementById('streak-count');
+        
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        // --- INITIALIZATION ---
+        function loadNewPuzzle() {
+            // Pick a random puzzle from the bank
+            const randomIndex = Math.floor(Math.random() * puzzleBank.length);
+            currentPuzzle = [...puzzleBank[randomIndex]];
+            
+            // Shuffle the display order for variety
+            currentPuzzle.sort(() => Math.random() - 0.5);
+            
+            resetCurrentPuzzle();
+        }
+
+        function resetCurrentPuzzle() {
+            currentCards = [...currentPuzzle];
+            clearSelections();
+            renderCards();
+        }
+
+        // --- RENDERING ---
+        function renderCards() {
+            cardsContainer.innerHTML = '';
+            
+            currentCards.forEach((num, index) => {
+                const card = document.createElement('div');
+                card.classList.add('number-card');
+                if (index === selectedCardIndex) card.classList.add('selected');
+                
+                card.innerText = num;
+                card.addEventListener('click', () => handleCardClick(index));
+                cardsContainer.appendChild(card);
+            });
+
+            checkWinCondition();
+        }
+
+        function clearSelections() {
+            selectedCardIndex = null;
+            selectedOperator = null;
+            opBtns.forEach(btn => btn.classList.remove('selected'));
+        }
+
+        // --- INTERACTION LOGIC ---
+        function handleCardClick(index) {
+            // 1. Select First Card
+            if (selectedCardIndex === null) {
+                selectedCardIndex = index;
+                renderCards();
+            } 
+            // 2. Select Second Card (if an operator is already chosen)
+            else if (selectedCardIndex !== null && selectedOperator !== null && selectedCardIndex !== index) {
+                executeMath(selectedCardIndex, index);
+            } 
+            // 3. Change First Card Selection
+            else {
+                selectedCardIndex = index;
+                renderCards();
+            }
+        }
+
+        opBtns.forEach(btn => btn.addEventListener('click', (e) => {
+            if (selectedCardIndex !== null) {
+                opBtns.forEach(b => b.classList.remove('selected'));
+                e.target.classList.add('selected');
+                selectedOperator = e.target.dataset.op;
+            } else {
+                showToast("Select a number card first!");
+            }
+        }));
+
+        function executeMath(index1, index2) {
+            const num1 = currentCards[index1];
+            const num2 = currentCards[index2];
+            let result = 0;
+
+            switch (selectedOperator) {
+                case '+': result = num1 + num2; break;
+                case '-': result = Math.abs(num1 - num2); break; // Always positive difference to keep it easy
+                case '*': result = num1 * num2; break;
+                case '/': 
+                    // Prevent decimals for 9-10 year olds!
+                    if (num1 % num2 === 0) result = num1 / num2;
+                    else if (num2 % num1 === 0) result = num2 / num1;
+                    else {
+                        showModal("Math Error!", "In this game, division must result in a whole number. Try a different move!", false);
+                        clearSelections();
+                        renderCards();
+                        return;
+                    }
+                    break;
+            }
+
+            // Remove the two used cards and add the new result card
+            // Sort indices descending so splice doesn't mess up positions
+            const indices = [index1, index2].sort((a, b) => b - a);
+            currentCards.splice(indices[0], 1);
+            currentCards.splice(indices[1], 1);
+            currentCards.push(result);
+
+            clearSelections();
+            renderCards();
+        }
+
+        function checkWinCondition() {
+            if (currentCards.length === 1) {
+                if (currentCards[0] === 24) {
+                    streak++;
+                    streakEl.innerText = streak;
+                    showModal("🎉 Target 24 Reached!", "Brilliant math skills! You combined all the numbers perfectly.", true);
+                } else {
+                    streak = 0;
+                    streakEl.innerText = streak;
+                    showModal("Not quite 24!", `You ended up with ${currentCards[0]}. Let's try that puzzle again.`, false);
+                    resetCurrentPuzzle();
+                }
+            }
+        }
+
+        // --- MODAL & BUTTON LISTENERS ---
+        function showModal(title, desc, isWin) {
+            modalTitle.innerText = title;
+            modalDesc.innerHTML = desc;
+            
+            if (isWin) {
+                modalCloseBtn.innerText = "Next Puzzle";
+                modalCloseBtn.onclick = () => {
+                    modal.classList.remove('active');
+                    loadNewPuzzle();
+                };
+            } else {
+                modalCloseBtn.innerText = "Try Again";
+                modalCloseBtn.onclick = () => {
+                    modal.classList.remove('active');
+                };
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function showToast(msg) {
+            // A temporary mini-alert function replacing default browser alerts
+            const toast = document.createElement('div');
+            toast.innerText = msg;
+            toast.style.position = 'fixed'; toast.style.bottom = '30px'; toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)'; toast.style.background = 'var(--ink)';
+            toast.style.color = 'white'; toast.style.padding = '10px 20px'; toast.style.borderRadius = '999px';
+            toast.style.fontFamily = "'Quicksand', sans-serif"; toast.style.fontWeight = '600';
+            toast.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)'; toast.style.zIndex = '300';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        document.getElementById('btn-reset').addEventListener('click', resetCurrentPuzzle);
+        
+        document.getElementById('btn-skip').addEventListener('click', () => {
+            streak = 0;
+            streakEl.innerText = streak;
+            loadNewPuzzle();
+        });
+
+        document.getElementById('btn-rules').addEventListener('click', () => {
+            modalTitle.innerText = "How to Play";
+            modalDesc.innerHTML = "1. Click a number card.<br>2. Choose an operator (+, -, ×, ÷).<br>3. Click another number card.<br><br>Keep combining numbers until you only have <strong>one card left</strong>, and it must equal exactly <strong>24</strong>!";
+            modalCloseBtn.innerText = "Got it!";
+            modalCloseBtn.onclick = () => modal.classList.remove('active');
+            modal.classList.add('active');
+        });
+
+        // Boot
+        loadNewPuzzle();
+    </script>
+</body>
+</html>

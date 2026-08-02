@@ -1,0 +1,10 @@
+ const firebaseConfig = {
+  apiKey: "AIzaSyAdQTK8tSHhnla5LePBKb0EgGHUWchkNbQ",
+  authDomain: "math-bdf5e.firebaseapp.com",
+  databaseURL: "https://math-bdf5e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "math-bdf5e",
+  storageBucket: "math-bdf5e.firebasestorage.app",
+  messagingSenderId: "515958917799",
+  appId: "1:515958917799:web:5e85a5dfabbce1e5a62982",
+  measurementId: "G-H9J3GMHCK8"
+};

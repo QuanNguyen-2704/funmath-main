@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotational Symmetry | Math Adventure Hub</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%9E%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coral: #FF6B6B;   --coral-deep: #E14E56;
+            --teal: #4ECDC4;    --teal-deep: #2FA79E;
+            --purple: #A78BFA;  --purple-deep: #7C5CE0;
+            --green: #6BCB77;   --green-deep: #48A857;
+            --yellow: #FFD93D;  --yellow-deep: #E5C336;
+            --ink: #2D3142;
+            --muted: #667085;
+            --bg-top: #EAF6FF;
+            --bg-bottom: #F5F0FF;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Quicksand', system-ui, sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            color: var(--ink);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Blobs */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            width: 480px;
+            height: 480px;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: .25;
+            z-index: -1;
+        }
+        body::before { background: var(--purple); top: -100px; left: -150px; }
+        body::after { background: var(--teal); bottom: -100px; right: -150px; }
+
+        /* ---------- HEADER ---------- */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(45, 49, 66, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--ink);
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            box-shadow: 0 4px 0 rgba(45, 49, 66, 0.1);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(45, 49, 66, 0.1);
+        }
+        
+        .back-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 rgba(45, 49, 66, 0.1);
+        }
+
+        header h1 {
+            font-family: 'Baloo 2', sans-serif;
+            margin: 0;
+            font-size: 1.6rem;
+            color: var(--teal-deep);
+        }
+
+        /* ---------- MAIN APP AREA ---------- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .instructions h2 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 2.2rem;
+            margin: 0 0 10px;
+        }
+
+        .instructions p {
+            color: var(--muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ---------- TABS ---------- */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+            max-width: 800px;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 2px solid transparent;
+            color: var(--muted);
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 8px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            color: var(--ink);
+        }
+
+        .tab-btn.active {
+            background: var(--teal);
+            color: white;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* Group Dividers */
+        .tab-divider {
+            width: 2px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 2px;
+            margin: 0 4px;
+        }
+
+        /* ---------- WORKSPACE ---------- */
+        .workspace {
+            background: var(--card-bg);
+            border-radius: 40px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(45, 49, 66, 0.08);
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin-bottom: 40px;
+            border-radius: 50%;
+            background: #F8FAFC;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Grid inside the circle */
+        .canvas-container::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(45,49,66,0.05) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(45,49,66,0.05) 2px, transparent 2px);
+            background-size: 40px 40px;
+            background-position: center;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        
+        .canvas-container::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--ink);
+            border-radius: 50%;
+            opacity: 0.2;
+        }
+
+        .shape-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* CLEARER SHADOW: Reduced blur and increased opacity */
+        #shape-bg {
+            filter: blur(2px) drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+            opacity: 0.55;
+            transition: opacity 0.3s ease, filter 0.3s ease;
+        }
+
+        #shape-fg {
+            transform-origin: center center;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+            transition: filter 0.3s ease;
+        }
+
+        /* Match Animation */
+        .matched #shape-bg {
+            opacity: 0.8;
+            filter: blur(10px);
+        }
+        
+        .matched #shape-fg {
+            filter: drop-shadow(0 0 25px var(--match-color, var(--yellow)));
+        }
+
+        /* ---------- CONTROLS ---------- */
+        .controls {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .slider-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]:focus { outline: none; }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 12px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border-radius: 999px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: var(--coral);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -10px;
+            box-shadow: 0 4px 10px rgba(225, 78, 86, 0.4);
+            border: 4px solid white;
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:active {
+            transform: scale(1.15);
+        }
+
+        .angle-readout {
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: var(--ink);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .feedback-message {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--muted);
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .feedback-message.success {
+            color: var(--green-deep);
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            .workspace { padding: 30px 20px; }
+            .canvas-container { width: 260px; height: 260px; }
+            header h1 { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Hub
+        </a>
+        <h1>Rotational Symmetry</h1>
+        <div style="width: 80px;"></div>
+    </header>
+
+    <main>
+        <div class="instructions">
+            <h2>Spin to Win!</h2>
+            <p>Slide to rotate the clear shape. Can you find the exact angles where it perfectly overlaps its shadow?</p>
+        </div>
+
+        <div class="tabs" id="shape-tabs">
+            <!-- Tabs generated via JS -->
+        </div>
+
+        <div class="workspace" id="workspace">
+            <div class="canvas-container" id="canvas-container">
+                <!-- 240x240 viewbox for crisp rendering inside 320x320 container -->
+                <svg id="shape-bg" class="shape-layer" viewBox="0 0 240 240"></svg>
+                <svg id="shape-fg" class="shape-layer" viewBox="0 0 240 240"></svg>
+            </div>
+
+            <div class="controls">
+                <div class="slider-container">
+                    <span style="font-weight: 700; color: var(--muted);">0°</span>
+                    <input type="range" id="angle-slider" min="0" max="360" value="0">
+                    <div class="angle-readout" id="angle-readout">0°</div>
+                </div>
+                <div class="feedback-message" id="feedback-msg">Rotate the shape to begin!</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Data for all standard and custom shapes
+        const shapesData = {
+            triangle: { name: "Triangle", group: "standard", color: "var(--coral)", matchColor: "rgba(255, 107, 107, 0.6)", symmetries: [120, 240, 360], svgInner: `<polygon points="120,30 197.94,165 42.06,165" fill="currentColor"/>` },
+            square: { name: "Square", group: "standard", color: "var(--teal)", matchColor: "rgba(78, 205, 196, 0.6)", symmetries: [90, 180, 270, 360], svgInner: `<rect x="50" y="50" width="140" height="140" rx="12" fill="currentColor"/>` },
+            rectangle: { name: "Rectangle", group: "standard", color: "var(--purple)", matchColor: "rgba(167, 139, 250, 0.6)", symmetries: [180, 360], svgInner: `<rect x="30" y="70" width="180" height="100" rx="12" fill="currentColor"/>` },
+            pentagon: { name: "Pentagon", group: "standard", color: "var(--yellow-deep)", matchColor: "rgba(229, 195, 54, 0.6)", symmetries: [72, 144, 216, 288, 360], svgInner: `<polygon points="120,30 205.59,92.19 172.9,192.8 67.1,192.8 34.41,92.19" fill="currentColor"/>` },
+            hexagon: { name: "Hexagon", group: "standard", color: "var(--green)", matchColor: "rgba(107, 203, 119, 0.6)", symmetries: [60, 120, 180, 240, 300, 360], svgInner: `<polygon points="120,30 197.94,75 197.94,165 120,210 42.06,165 42.06,75" fill="currentColor"/>` },
+            star: { name: "Star", group: "standard", color: "var(--coral-deep)", matchColor: "rgba(225, 78, 86, 0.6)", symmetries: [72, 144, 216, 288, 360], svgInner: `<polygon points="120,30 141.16,90.88 205.59,92.19 154.24,131.12 172.9,192.8 120,156 67.1,192.8 85.76,131.12 34.41,92.19 98.84,90.88" fill="currentColor"/>` },
+            parallelogram: { name: "Parallelogram", group: "standard", color: "var(--teal-deep)", matchColor: "rgba(47, 167, 158, 0.6)", symmetries: [180, 360], svgInner: `<polygon points="60,80 200,80 180,160 40,160" fill="currentColor"/>` },
+            rhombus: { name: "Rhombus", group: "standard", color: "var(--purple-deep)", matchColor: "rgba(124, 92, 224, 0.6)", symmetries: [180, 360], svgInner: `<polygon points="120,30 190,120 120,210 50,120" fill="currentColor"/>` },
+            
+            // Custom Pirate/Adventure Shapes
+            compass: {
+                name: "🧭 Compass Rose", group: "custom", color: "var(--coral)", matchColor: "rgba(255, 107, 107, 0.6)", symmetries: [90, 180, 270, 360],
+                svgInner: `
+                    <circle cx="120" cy="120" r="75" fill="none" stroke="currentColor" stroke-width="12"/>
+                    <circle cx="120" cy="120" r="60" fill="none" stroke="currentColor" stroke-width="4" opacity="0.3"/>
+                    <g fill="currentColor">
+                        <polygon points="120,50 130,110 190,120 130,130 120,190 110,130 50,120 110,110" opacity="0.6"/>
+                        <polygon points="120,10 135,105 230,120 135,135 120,230 105,135 10,120 105,105"/>
+                        <circle cx="120" cy="120" r="22" fill="#fff"/>
+                        <circle cx="120" cy="120" r="12" fill="currentColor"/>
+                    </g>`
+            },
+            coin: {
+                name: "🪙 Dragon Coin", group: "custom", color: "var(--yellow-deep)", matchColor: "rgba(229, 195, 54, 0.6)", symmetries: [360],
+                svgInner: `
+                    <g fill="currentColor">
+                        <path d="M 120 20 A 100 100 0 1 1 35.8 173.8 L 50 160 A 100 100 0 0 1 120 20 Z" />
+                        <path d="M 70 90 Q 120 30 160 80 T 150 160 Q 100 130 70 160 Z" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+                        <circle cx="160" cy="70" r="8" fill="#fff" opacity="0.7"/>
+                        <circle cx="80" cy="130" r="10" fill="#fff" opacity="0.7"/>
+                    </g>`
+            },
+            skull: {
+                name: "☠️ Saber Skull", group: "custom", color: "var(--muted)", matchColor: "rgba(102, 112, 133, 0.6)", symmetries: [360],
+                svgInner: `
+                    <line x1="30" y1="50" x2="210" y2="190" stroke="currentColor" stroke-width="20" stroke-linecap="round" opacity="0.4"/>
+                    <line x1="210" y1="50" x2="30" y2="190" stroke="currentColor" stroke-width="20" stroke-linecap="round" opacity="0.4"/>
+                    <path d="M 60 70 C 60 10, 180 10, 180 70 C 180 130, 165 140, 160 150 L 150 200 L 125 150 L 115 150 L 90 200 L 80 150 C 75 140, 60 130, 60 70 Z" fill="currentColor"/>
+                    <circle cx="95" cy="85" r="18" fill="#fff"/>
+                    <circle cx="145" cy="85" r="18" fill="#fff"/>
+                    <path d="M 115 125 L 125 125 L 120 110 Z" fill="#fff"/>`
+            },
+            swords: {
+                name: "⚔️ Sword Plaque", group: "custom", color: "var(--purple)", matchColor: "rgba(167, 139, 250, 0.6)", symmetries: [180, 360],
+                svgInner: `
+                    <rect x="20" y="60" width="200" height="120" rx="6" fill="currentColor" opacity="0.4"/>
+                    <path d="M 30 70 L 210 70 L 210 170 L 30 170 Z" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M 50 140 C 80 155, 140 155, 170 110 L 170 125 C 140 175, 70 165, 50 140 Z" fill="currentColor"/>
+                    <circle cx="40" cy="140" r="12" fill="currentColor"/>
+                    <path d="M 190 100 C 160 85, 100 85, 70 130 L 70 115 C 100 65, 170 75, 190 100 Z" fill="currentColor"/>
+                    <circle cx="200" cy="100" r="12" fill="currentColor"/>`
+            },
+            wheel: {
+                name: "⚓ Ship Wheel", group: "custom", color: "var(--green-deep)", matchColor: "rgba(72, 168, 87, 0.6)", symmetries: [45, 90, 135, 180, 225, 270, 315, 360],
+                svgInner: `
+                    <g stroke="currentColor" stroke-linecap="round">
+                        <line x1="120" y1="10" x2="120" y2="230" stroke-width="12"/>
+                        <line x1="10" y1="120" x2="230" y2="120" stroke-width="12"/>
+                        <line x1="42.2" y1="42.2" x2="197.8" y2="197.8" stroke-width="12"/>
+                        <line x1="42.2" y1="197.8" x2="197.8" y2="42.2" stroke-width="12"/>
+                        <circle cx="120" cy="120" r="80" fill="none" stroke-width="16"/>
+                        <circle cx="120" cy="120" r="60" fill="none" stroke="#fff" stroke-width="4" opacity="0.4"/>
+                        <circle cx="120" cy="120" r="28" fill="currentColor" stroke="none"/>
+                        <circle cx="120" cy="120" r="12" fill="#fff" stroke="none"/>
+                    </g>`
+            }
+        };
+
+        const tabsContainer = document.getElementById('shape-tabs');
+        const bgSvg = document.getElementById('shape-bg');
+        const fgSvg = document.getElementById('shape-fg');
+        const slider = document.getElementById('angle-slider');
+        const readout = document.getElementById('angle-readout');
+        const feedbackMsg = document.getElementById('feedback-msg');
+        const workspace = document.getElementById('workspace');
+
+        let currentShapeKey = 'square';
+        let foundSymmetries = new Set();
+
+        function init() {
+            let lastGroup = "standard";
+
+            Object.keys(shapesData).forEach(key => {
+                const data = shapesData[key];
+                
+                // Add a visual divider between normal shapes and pirate shapes
+                if (data.group !== lastGroup) {
+                    const divider = document.createElement('div');
+                    divider.className = 'tab-divider';
+                    tabsContainer.appendChild(divider);
+                    lastGroup = data.group;
+                }
+
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${key === currentShapeKey ? 'active' : ''}`;
+                btn.innerText = data.name;
+                btn.onclick = () => loadShape(key);
+                tabsContainer.appendChild(btn);
+            });
+
+            loadShape(currentShapeKey);
+            slider.addEventListener('input', handleRotation);
+        }
+
+        function loadShape(key) {
+            currentShapeKey = key;
+            const data = shapesData[key];
+            foundSymmetries.clear();
+
+            // Update UI Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText === data.name) btn.classList.add('active');
+            });
+
+            // Apply SVG data & Colors
+            bgSvg.innerHTML = data.svgInner;
+            bgSvg.style.color = data.color;
+            
+            fgSvg.innerHTML = data.svgInner;
+            fgSvg.style.color = data.color;
+            
+            workspace.style.setProperty('--match-color', data.matchColor);
+
+            slider.value = 0;
+            updateRotationVisuals(0);
+            
+            // Adjust message for shapes with 0 lines (only 360 degree symmetry)
+            if(data.symmetries.length === 1 && data.symmetries[0] === 360) {
+                feedbackMsg.innerText = "Rotate to find if it has any symmetry at all!";
+            } else {
+                feedbackMsg.innerText = `Rotate to find ${data.symmetries.length} lines of symmetry!`;
+            }
+
+            feedbackMsg.classList.remove('success');
+            workspace.classList.remove('matched');
+            
+            const style = document.createElement('style');
+            style.innerHTML = `input[type=range]::-webkit-slider-thumb { background: ${data.color}; box-shadow: 0 4px 10px ${data.matchColor}; }`;
+            document.head.appendChild(style);
+        }
+
+        function handleRotation(e) {
+            let angle = parseInt(e.target.value);
+            const data = shapesData[currentShapeKey];
+            let isMatch = false;
+
+            // 4 degree magnetic snap
+            for (let symAngle of data.symmetries) {
+                if (Math.abs(angle - symAngle) <= 4) {
+                    angle = symAngle;
+                    slider.value = symAngle;
+                    isMatch = true;
+                    break;
+                }
+            }
+            
+            if (angle <= 4) {
+                angle = 0;
+                slider.value = 0;
+            }
+
+            updateRotationVisuals(angle, isMatch);
+        }
+
+        function updateRotationVisuals(angle, isMatch = false) {
+            const data = shapesData[currentShapeKey];
+            
+            fgSvg.style.transform = `rotate(${angle}deg)`;
+            readout.innerText = `${angle}°`;
+
+            if (isMatch) {
+                workspace.classList.add('matched');
+                feedbackMsg.classList.add('success');
+                
+                if (angle === 360 && data.symmetries.length === 1) {
+                    feedbackMsg.innerText = "Only matches at 360°! (No rotational symmetry)";
+                } else if (angle === 360) {
+                    feedbackMsg.innerText = "Full Rotation! (360°)";
+                } else {
+                    feedbackMsg.innerText = `Perfect Match! (${angle}°)`;
+                }
+                
+                foundSymmetries.add(angle);
+                if (foundSymmetries.size === data.symmetries.length) {
+                    setTimeout(() => {
+                        if (parseInt(slider.value) === angle) {
+                            if (data.symmetries.length === 1) {
+                                feedbackMsg.innerText = `Great observation! 🎉`;
+                            } else {
+                                feedbackMsg.innerText = `Amazing! You found all ${data.symmetries.length} symmetries! 🎉`;
+                            }
+                        }
+                    }, 1200);
+                }
+
+            } else {
+                workspace.classList.remove('matched');
+                feedbackMsg.classList.remove('success');
+                
+                if (angle === 0) {
+                    feedbackMsg.innerText = "Start rotating...";
+                } else {
+                    feedbackMsg.innerText = "Keep going...";
+                }
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
+

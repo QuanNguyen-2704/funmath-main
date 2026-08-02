@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe | Math Adventure Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coral: #FF6B6B;
+            --teal: #4ECDC4;
+            --ink: #2D3142;
+            --bg-top: #EAF6FF;
+            --bg-bottom: #F5F0FF;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            color: var(--ink);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Ambient background blobs matching the hub */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.2;
+            z-index: -1;
+        }
+        body::before { background: #FFD93D; top: -100px; left: -100px; }
+        body::after { background: var(--teal); bottom: -100px; right: -100px; }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--ink);
+            font-weight: 700;
+            background: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 999px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .game-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(45, 49, 66, 0.1);
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            color: var(--ink);
+        }
+
+        .status {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #667085;
+            height: 28px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            background: var(--ink);
+            padding: 10px;
+            border-radius: 15px;
+            margin: 0 auto 30px auto;
+        }
+
+        .cell {
+            background: var(--card-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .cell:hover {
+            background: #F8F9FA;
+        }
+
+        .cell.x { color: var(--coral); }
+        .cell.o { color: var(--teal); }
+
+        .reset-btn {
+            background: var(--ink);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 999px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+        }
+        .reset-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 480px) {
+            .board {
+                grid-template-columns: repeat(3, 80px);
+                grid-template-rows: repeat(3, 80px);
+            }
+            .cell { font-size: 3rem; }
+            .game-container { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">← Back to Hub</a>
+    </header>
+
+    <div class="game-container">
+        <h1>Tic Tac Toe</h1>
+        <div class="status" id="status">Player X's turn</div>
+        
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+
+        <button class="reset-btn" id="resetBtn">Restart Game</button>
+    </div>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const statusText = document.getElementById('status');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameActive = true;
+
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        function handleCellClick(e) {
+            const cell = e.target;
+            const cellIndex = parseInt(cell.getAttribute('data-index'));
+
+            // Ignore click if cell is full or game is over
+            if (board[cellIndex] !== "" || !gameActive) return;
+
+            // Update board array and UI
+            board[cellIndex] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+
+            checkWinCondition();
+        }
+
+        function checkWinCondition() {
+            let roundWon = false;
+
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                statusText.textContent = `🎉 Player ${currentPlayer} Wins!`;
+                statusText.style.color = currentPlayer === 'X' ? 'var(--coral)' : 'var(--teal)';
+                gameActive = false;
+                return;
+            }
+
+            // Check for draw
+            if (!board.includes("")) {
+                statusText.textContent = "It's a Draw!";
+                statusText.style.color = "var(--ink)";
+                gameActive = false;
+                return;
+            }
+
+            // Change player
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            statusText.textContent = `Player ${currentPlayer}'s turn`;
+            statusText.style.color = "#667085"; // reset color
+        }
+
+        function restartGame() {
+            board = ["", "", "", "", "", "", "", "", ""];
+            currentPlayer = "X";
+            gameActive = true;
+            statusText.textContent = `Player ${currentPlayer}'s turn`;
+            statusText.style.color = "#667085";
+
+            cells.forEach(cell => {
+                cell.textContent = "";
+                cell.classList.remove('x', 'o');
+            });
+        }
+
+        // Add event listeners
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        resetBtn.addEventListener('click', restartGame);
+    </script>
+
+</body>
+</html>

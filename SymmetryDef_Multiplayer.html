@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry Defense - Multiplayer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .header { text-align: center; max-width: 600px; margin-bottom: 20px; }
+        h1 { color: #2c3e50; margin-bottom: 5px; }
+        
+        /* Lobby Styles */
+        #lobby {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center;
+        }
+        .btn {
+            padding: 12px 24px; font-size: 16px; cursor: pointer;
+            background-color: #3498db; color: white; border: none;
+            border-radius: 4px; margin: 10px; transition: 0.2s;
+        }
+        .btn:hover { background-color: #2980b9; }
+        .btn-green { background-color: #2ecc71; }
+        .btn-green:hover { background-color: #27ae60; }
+        .btn-red { background-color: #e74c3c; }
+        .btn-red:hover { background-color: #c0392b; }
+
+        /* Game Styles */
+        #game-area { display: none; width: 100%; max-width: 500px; align-items: center; flex-direction: column; }
+        .room-info {
+            background: #e8f4f8; padding: 10px; border-radius: 4px;
+            border: 1px solid #bce0fd; margin-bottom: 15px; text-align: center; width: 100%;
+        }
+        .room-info input { padding: 5px; width: 250px; text-align: center; }
+        
+        .status-panel {
+            background-color: #fff; padding: 15px 25px; border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;
+            text-align: center; width: 100%; box-sizing: border-box;
+        }
+        #turn-indicator { font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+        #phase-indicator { font-size: 14px; color: #7f8c8d; font-style: italic; }
+        #role-indicator { margin-top: 10px; font-size: 14px; font-weight: bold; background: #eee; padding: 5px; border-radius: 4px;}
+        
+        .board-container { position: relative; margin-bottom: 20px; }
+        .board {
+            display: grid; grid-template-columns: repeat(4, 80px);
+            grid-template-rows: repeat(4, 80px); gap: 2px;
+            background-color: #34495e; border: 4px solid #34495e; border-radius: 4px;
+        }
+        .cell {
+            background-color: #ecf0f1; display: flex; justify-content: center;
+            align-items: center; cursor: pointer; transition: background-color 0.2s;
+        }
+        .cell:hover { background-color: #bdc3c7; }
+        
+        /* The Penny */
+        .penny {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #e6a87c, #b87333);
+            border: 2px solid #8c5226; box-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            pointer-events: none; transition: transform 0.2s;
+        }
+        .cell.selected .penny { transform: scale(1.1); box-shadow: 0 0 10px 4px #3498db; }
+        .cell.selected { background-color: #aed6f1; }
+        
+        #symmetry-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: none;
+        }
+        .sym-line { position: absolute; background-color: rgba(46, 204, 113, 0.8); box-shadow: 0 0 8px rgba(46, 204, 113, 1); }
+        
+        #win-banner {
+            display: none; color: white; padding: 15px 30px; border-radius: 8px;
+            font-size: 24px; font-weight: bold; margin-bottom: 20px;
+            text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 100%; box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Symmetry Defense (Online)</h1>
+    </div>
+
+    <!-- LOBBY SCREEN -->
+    <div id="lobby">
+        <div id="lobby-default">
+            <h2>Welcome to Multiplayer</h2>
+            <p>Create a room to invite your student.</p>
+            <button class="btn btn-green" id="btn-create-room">Create New Room</button>
+        </div>
+        <div id="lobby-join" style="display: none;">
+            <h2>Room Found!</h2>
+            <p>Select your role to join the game:</p>
+            <button class="btn btn-green" id="btn-join-p1">Join as Player 1 (Creator)</button>
+            <button class="btn btn-red" id="btn-join-p2">Join as Player 2 (Defender)</button>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-area">
+        <div class="room-info">
+            <strong>Send this link to your opponent:</strong><br>
+            <input type="text" id="share-link" readonly onclick="this.select()">
+        </div>
+
+        <div id="win-banner"></div>
+
+        <div class="status-panel">
+            <div id="turn-indicator">Loading...</div>
+            <div id="phase-indicator"></div>
+            <div id="role-indicator"></div>
+        </div>
+
+        <div class="board-container">
+            <div class="board" id="board"></div>
+            <div id="symmetry-overlay"></div>
+        </div>
+
+        <button class="btn" id="btn-reset">Reset Game for Both Players</button>
+    </div>
+
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // =========================================================================
+    // ⚠️ REPLACE THIS OBJECT WITH YOUR CONFIG FROM FIREBASE (Step 2) ⚠️
+    // =========================================================================
+    const firebaseConfig = {
+  apiKey: "AIzaSyAdQTK8tSHhnla5LePBKb0EgGHUWchkNbQ",
+  authDomain: "math-bdf5e.firebaseapp.com",
+  databaseURL: "https://math-bdf5e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "math-bdf5e",
+  storageBucket: "math-bdf5e.firebasestorage.app",
+  messagingSenderId: "515958917799",
+  appId: "1:515958917799:web:5e85a5dfabbce1e5a62982",
+  measurementId: "G-H9J3GMHCK8"
+};
+    // =========================================================================
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Variables
+    let roomId = null;
+    let myRole = null; // 1 or 2
+    let dbRef = null;
+    let localState = null;
+    let selectedCell = null;
+
+    // DOM Elements
+    const lobbyEl = document.getElementById('lobby');
+    const lobbyDefault = document.getElementById('lobby-default');
+    const lobbyJoin = document.getElementById('lobby-join');
+    const gameArea = document.getElementById('game-area');
+    const boardEl = document.getElementById('board');
+    const turnInd = document.getElementById('turn-indicator');
+    const phaseInd = document.getElementById('phase-indicator');
+    const roleInd = document.getElementById('role-indicator');
+    const winBanner = document.getElementById('win-banner');
+    const symOverlay = document.getElementById('symmetry-overlay');
+
+    // Check URL for room ID
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('room')) {
+        roomId = urlParams.get('room');
+        lobbyDefault.style.display = 'none';
+        lobbyJoin.style.display = 'block';
+    }
+
+    // Default Game State Template
+    const getInitialState = () => ({
+        grid: Array(4).fill().map(() => Array(4).fill(0)),
+        phase: 'placing', // 'placing', 'moving', 'gameOver'
+        currentPlayer: 1,
+        penniesPlaced: 0,
+        p1Moves: 0,
+        lastMove: { fromR: -1, fromC: -1, toR: -1, toC: -1 }, // Firebase dislikes true nulls in objects
+        winner: 0,
+        symType: ""
+    });
+
+    // --- LOBBY LOGIC ---
+    document.getElementById('btn-create-room').addEventListener('click', async () => {
+        // Generate random 5-letter room code
+        roomId = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const newRef = ref(db, 'rooms/' + roomId);
+        await set(newRef, getInitialState());
+        
+        // Redirect to URL with room code
+        window.location.href = window.location.pathname + '?room=' + roomId;
+    });
+
+    document.getElementById('btn-join-p1').addEventListener('click', () => joinGame(1));
+    document.getElementById('btn-join-p2').addEventListener('click', () => joinGame(2));
+
+    function joinGame(role) {
+        myRole = role;
+        lobbyEl.style.display = 'none';
+        gameArea.style.display = 'flex';
+        
+        document.getElementById('share-link').value = window.location.href;
+        roleInd.innerText = `You are playing as: Player ${myRole}`;
+        if(myRole === 1) roleInd.style.color = '#27ae60';
+        else roleInd.style.color = '#c0392b';
+
+        initBoard();
+        
+        // Start listening to Firebase
+        dbRef = ref(db, 'rooms/' + roomId);
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                localState = data;
+                
+                // Firebase omits empty nested arrays, ensure grid exists safely
+                if(!localState.grid) localState.grid = Array(4).fill().map(() => Array(4).fill(0));
+                for(let i=0; i<4; i++) {
+                    if(!localState.grid[i]) localState.grid[i] = [0,0,0,0];
+                }
+
+                render();
+            } else {
+                alert("Room not found or was deleted.");
+                window.location.href = window.location.pathname;
+            }
+        });
+    }
+
+    // --- GAME LOGIC ---
+    function initBoard() {
+        boardEl.innerHTML = '';
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.addEventListener('click', () => handleCellClick(r, c));
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    function render() {
+        if(!localState) return;
+
+        // Update Grid UI
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(cell => {
+            const r = parseInt(cell.dataset.r);
+            const c = parseInt(cell.dataset.c);
+            
+            if (localState.grid[r][c] === 1) {
+                if (!cell.hasChildNodes()) {
+                    const penny = document.createElement('div');
+                    penny.className = 'penny';
+                    cell.appendChild(penny);
+                }
+            } else {
+                cell.innerHTML = '';
+            }
+
+            if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
+                cell.classList.add('selected');
+            } else {
+                cell.classList.remove('selected');
+            }
+        });
+
+        // Update Text
+        if (localState.phase !== 'gameOver') {
+            turnInd.innerText = `Player ${localState.currentPlayer}'s Turn`;
+            if(myRole === localState.currentPlayer) {
+                turnInd.innerText = "⭐ It is YOUR turn! ⭐";
+                turnInd.style.color = "#d35400";
+            } else {
+                turnInd.style.color = "#2980b9";
+            }
+
+            if (localState.phase === 'placing') {
+                phaseInd.innerText = `Phase: Placing Pennies (${localState.penniesPlaced}/8)`;
+            } else if (localState.phase === 'moving') {
+                phaseInd.innerText = `Phase: Moving Pennies (P1 Moves: ${localState.p1Moves}/4)`;
+            }
+            
+            winBanner.style.display = 'none';
+            symOverlay.style.display = 'none';
+        } else {
+            turnInd.innerText = "Game Over";
+            phaseInd.innerText = "";
+            winBanner.style.display = 'block';
+            
+            if (localState.winner === 1) {
+                winBanner.style.backgroundColor = '#2ecc71';
+                winBanner.innerHTML = "🎉 Player 1 Wins! Symmetry Achieved! 🎉";
+                drawSymmetryLine(localState.symType);
+            } else if (localState.winner === 2) {
+                winBanner.style.backgroundColor = '#e74c3c';
+                winBanner.innerHTML = "🛡️ Player 2 Wins! Defense Successful! 🛡️";
+            }
+        }
+    }
+
+    function handleCellClick(r, c) {
+        if (!localState || localState.phase === 'gameOver') return;
+        
+        // ONLY ALLOW CLICK IF IT IS THIS PLAYER'S TURN
+        if (myRole !== localState.currentPlayer) {
+            console.log("Not your turn!");
+            return;
+        }
+
+        if (localState.phase === 'placing') {
+            if (localState.grid[r][c] === 0) {
+                localState.grid[r][c] = 1;
+                localState.penniesPlaced++;
+                
+                if (localState.penniesPlaced === 8) {
+                    let sym = checkSymmetry();
+                    if (sym) {
+                        localState.winner = 1;
+                        localState.symType = sym;
+                        localState.phase = 'gameOver';
+                    } else {
+                        localState.phase = 'moving';
+                        localState.currentPlayer = 2; // P2 goes first in moving
+                        selectedCell = null;
+                    }
+                } else {
+                    localState.currentPlayer = localState.currentPlayer === 1 ? 2 : 1;
+                }
+                pushState();
+            }
+        } 
+        else if (localState.phase === 'moving') {
+            if (localState.grid[r][c] === 1) {
+                selectedCell = { r, c };
+                render(); // local re-render just for selection highlight
+            } else if (localState.grid[r][c] === 0 && selectedCell) {
+                // Rule: No undoing exact previous move
+                const lm = localState.lastMove;
+                if (lm.toR !== -1 && selectedCell.r === lm.toR && selectedCell.c === lm.toC && r === lm.fromR && c === lm.fromC) {
+                    alert("Illegal Move: You cannot undo the exact previous move!");
+                    return;
+                }
+
+                // Execute Move
+                localState.grid[selectedCell.r][selectedCell.c] = 0;
+                localState.grid[r][c] = 1;
+                localState.lastMove = { fromR: selectedCell.r, fromC: selectedCell.c, toR: r, toC: c };
+                
+                if (localState.currentPlayer === 1) localState.p1Moves++;
+                selectedCell = null;
+                
+                // Check Wins
+                let sym = checkSymmetry();
+                if (sym) {
+                    localState.winner = 1;
+                    localState.symType = sym;
+                    localState.phase = 'gameOver';
+                } else if (localState.currentPlayer === 1 && localState.p1Moves >= 4) {
+                    localState.winner = 2;
+                    localState.phase = 'gameOver';
+                } else {
+                    localState.currentPlayer = localState.currentPlayer === 1 ? 2 : 1;
+                }
+                pushState();
+            }
+        }
+    }
+
+    function checkSymmetry() {
+        if (localState.penniesPlaced < 8) return false;
+        const g = localState.grid;
+        let vSym = true, hSym = true, d1Sym = true, d2Sym = true;
+        
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                if (g[r][c] !== g[r][3 - c]) vSym = false;
+                if (g[r][c] !== g[3 - r][c]) hSym = false;
+                if (g[r][c] !== g[c][r]) d1Sym = false;
+                if (g[r][c] !== g[3 - c][3 - r]) d2Sym = false;
+            }
+        }
+        if (vSym) return 'vertical';
+        if (hSym) return 'horizontal';
+        if (d1Sym) return 'diagonal-main'; 
+        if (d2Sym) return 'diagonal-anti'; 
+        return false;
+    }
+
+    function drawSymmetryLine(type) {
+        symOverlay.style.display = 'block';
+        symOverlay.innerHTML = ''; 
+        const line = document.createElement('div');
+        line.className = 'sym-line';
+        if (type === 'vertical') {
+            line.style.width = '6px'; line.style.height = '100%';
+            line.style.left = '50%'; line.style.transform = 'translateX(-50%)'; line.style.top = '0';
+        } else if (type === 'horizontal') {
+            line.style.height = '6px'; line.style.width = '100%';
+            line.style.top = '50%'; line.style.transform = 'translateY(-50%)'; line.style.left = '0';
+        } else if (type === 'diagonal-main') {
+            line.style.height = '6px'; line.style.width = '141%'; 
+            line.style.top = '50%'; line.style.left = '50%'; line.style.transform = 'translate(-50%, -50%) rotate(45deg)';
+        } else if (type === 'diagonal-anti') {
+            line.style.height = '6px'; line.style.width = '141%';
+            line.style.top = '50%'; line.style.left = '50%'; line.style.transform = 'translate(-50%, -50%) rotate(-45deg)';
+        }
+        symOverlay.appendChild(line);
+    }
+
+    function pushState() {
+        set(dbRef, localState);
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+        if(confirm("Are you sure you want to reset the board for both players?")) {
+            set(dbRef, getInitialState());
+        }
+    });
+
+</script>
+</body>
+</html>

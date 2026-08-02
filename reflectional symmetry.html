@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Symmetry Explorer | Math Adventure Hub</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%9E%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coral: #FF6B6B;   --coral-deep: #E14E56;
+            --teal: #4ECDC4;    --teal-deep: #2FA79E;
+            --purple: #A78BFA;  --purple-deep: #7C5CE0;
+            --green: #6BCB77;   --green-deep: #48A857;
+            --yellow: #FFD93D;
+            --ink: #2D3142;
+            --muted: #667085;
+            --bg-top: #EAF6FF;
+            --bg-bottom: #F5F0FF;
+            --card-bg: #ffffff;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Quicksand', system-ui, sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            color: var(--ink);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Blobs */
+        body::before, body::after {
+            content: "";
+            position: fixed;
+            width: 480px;
+            height: 480px;
+            border-radius: 50%;
+            filter: blur(70px);
+            opacity: .25;
+            z-index: -1;
+        }
+        body::before { background: var(--purple); top: -100px; left: -150px; }
+        body::after { background: var(--teal); bottom: -100px; right: -150px; }
+
+        /* ---------- HEADER ---------- */
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(45, 49, 66, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--ink);
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 20px;
+            border-radius: 999px;
+            box-shadow: 0 4px 0 rgba(45, 49, 66, 0.1);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(45, 49, 66, 0.1); }
+        .back-btn:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(45, 49, 66, 0.1); }
+        
+        header h1 {
+            font-family: 'Baloo 2', sans-serif;
+            margin: 0;
+            font-size: 1.6rem;
+            color: var(--teal-deep);
+        }
+
+        /* ---------- APP CONTAINER ---------- */
+        .app-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            border-radius: 30px;
+            width: 100%;
+            max-width: 950px;
+            box-shadow: 0 10px 30px rgba(45,49,66,0.08);
+            display: flex;
+            overflow: hidden;
+            border: 4px solid white;
+        }
+
+        /* ---------- SIDEBAR MENU ---------- */
+        .sidebar {
+            background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+            width: 240px;
+            padding: 25px 15px;
+            display: flex;
+            flex-direction: column;
+            border-right: 2px solid #E2E8F0;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        /* Custom Scrollbar for Sidebar */
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+
+        .sidebar h3 {
+            font-family: 'Baloo 2', sans-serif;
+            text-align: center;
+            margin: 0 0 15px;
+            font-size: 1.2rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-btn {
+            background: white;
+            border: 2px solid transparent;
+            color: var(--ink);
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            text-align: left;
+        }
+        .menu-btn:hover { transform: translateX(4px); border-color: var(--teal); }
+        
+        .menu-btn.active {
+            background: var(--teal);
+            color: white;
+            box-shadow: 0 4px 10px rgba(78, 205, 196, 0.3);
+            border-color: var(--teal);
+            transform: translateX(4px);
+        }
+
+        .divider { height: 2px; background: #E2E8F0; margin: 15px 10px; border-radius: 2px; }
+
+        /* ---------- MAIN CONTENT ---------- */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .instructions {
+            background-color: var(--bg-top);
+            padding: 15px 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            width: 100%;
+            text-align: center;
+            color: var(--ink);
+            font-size: 1rem;
+            font-weight: 500;
+            border: 2px dashed rgba(78, 205, 196, 0.4);
+        }
+
+        canvas {
+            background-color: #FAFCFF;
+            border-radius: 20px;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.03);
+            cursor: default;
+            max-width: 100%;
+            border: 2px solid #E2E8F0;
+        }
+
+        .slider-container {
+            margin-top: 25px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .slider-container label {
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 700;
+            color: var(--muted);
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 12px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border-radius: 999px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: var(--coral);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -10px;
+            box-shadow: 0 4px 10px rgba(225, 78, 86, 0.4);
+            border: 4px solid white;
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.15); }
+
+        @media (max-width: 768px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 2px solid #E2E8F0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 15px; }
+            .sidebar h3, .divider { display: none; }
+            .menu-btn { margin: 0; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Hub
+        </a>
+        <h1>Symmetry Folding Explorer</h1>
+        <div style="width: 80px;"></div>
+    </header>
+
+    <div class="app-wrapper">
+        <div class="app-container">
+            <!-- Sidebar with the expanded shape library -->
+            <div class="sidebar" id="menu">
+                <h3>Standard</h3>
+                <button class="menu-btn active" data-shape="square">Square</button>
+                <button class="menu-btn" data-shape="rectangle">Rectangle</button>
+                <button class="menu-btn" data-shape="isoTriangle">Isosceles Triangle</button>
+                <button class="menu-btn" data-shape="equiTriangle">Equilateral Triangle</button>
+                <button class="menu-btn" data-shape="pentagon">Pentagon</button>
+                <button class="menu-btn" data-shape="hexagon">Hexagon</button>
+                <button class="menu-btn" data-shape="octagon">Octagon</button>
+                <button class="menu-btn" data-shape="rhombus">Rhombus</button>
+                <button class="menu-btn" data-shape="isoTrapezoid">Isosceles Trapezoid</button>
+                <button class="menu-btn" data-shape="trapezoid">Normal Trapezoid</button>
+                <button class="menu-btn" data-shape="parallelogram">Parallelogram</button>
+                <button class="menu-btn" data-shape="kite">Kite</button>
+                <button class="menu-btn" data-shape="circle">Circle</button>
+                <div class="divider"></div>
+                <h3>Adventure</h3>
+                <button class="menu-btn" data-shape="skull">☠️ Saber Skull</button>
+                <button class="menu-btn" data-shape="wheel">⚓ Ship Wheel</button>
+            </div>
+
+            <div class="main-content">
+                <div class="instructions">
+                    <strong>1.</strong> Drag the <strong>blue and red dots</strong> to set your mirror line.<br>
+                    <strong>2.</strong> Slide to fold the shape. Does it match perfectly on the other side?
+                </div>
+                
+                <canvas id="mainCanvas" width="600" height="400"></canvas>
+
+                <div class="slider-container">
+                    <label for="foldSlider">Drag to fold over the axis:</label>
+                    <input type="range" id="foldSlider" min="0" max="180" value="0">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const foldSlider = document.getElementById('foldSlider');
+    const buttons = document.querySelectorAll('.menu-btn');
+
+    let foldAngleDeg = 0;
+    let currentShapeKey = 'square';
+    let currentPoints = [];
+    let axis = { x1: 300, y1: 50, x2: 300, y2: 350 }; 
+    let dragHandle = null;
+    let mouseX = -100;
+    let mouseY = -100;
+
+    // --- Mathematical Shape Generators ---
+    
+    // Dynamically generates vertices for any regular polygon
+    function makeRegularPoly(cx, cy, r, sides, angleOffsetDeg = -90) {
+        let pts = [];
+        for(let i = 0; i < sides; i++) {
+            let a = (angleOffsetDeg + i * 360 / sides) * Math.PI / 180;
+            pts.push({x: cx + r * Math.cos(a), y: cy + r * Math.sin(a)});
+        }
+        return pts;
+    }
+
+    // Dynamically generates snapping lines based on angles
+    function makeGuides(cx, cy, length, anglesDeg) {
+        return anglesDeg.map(a => {
+            let rad = a * Math.PI / 180;
+            let dx = Math.cos(rad) * length;
+            let dy = Math.sin(rad) * length;
+            // Round to avoid float precision noise snapping
+            return {
+                x1: Math.round(cx - dx),
+                y1: Math.round(cy - dy),
+                x2: Math.round(cx + dx),
+                y2: Math.round(cy + dy)
+            };
+        });
+    }
+
+    // Custom Adventure Shapes
+    function generateWheel(cx, cy) {
+        let pts = [];
+        for (let i = 0; i < 360; i += 3) {
+            let rad = i * Math.PI / 180;
+            let r = 85 + 25 * Math.pow(Math.cos(8 * rad), 6);
+            pts.push({x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad)});
+        }
+        return pts;
+    }
+
+    function generateSkull(cx, cy) {
+        let pts = [];
+        for(let i=180; i<=360; i+=10) { pts.push({x: cx + 80 * Math.cos(i * Math.PI/180), y: cy - 20 + 80 * Math.sin(i * Math.PI/180)}); }
+        pts.push({x: cx + 80, y: cy - 20}, {x: cx + 60, y: cy + 40}, {x: cx + 35, y: cy + 40}, {x: cx + 35, y: cy + 90}, {x: cx - 35, y: cy + 90});
+        pts.push({x: cx - 35, y: cy + 40}, {x: cx - 60, y: cy + 40}, {x: cx - 80, y: cy - 20});
+        return pts;
+    }
+
+    // --- Core Shape Library Data ---
+    const shapesData = {
+        'square': {
+            points: [ {x: 180, y: 80}, {x: 420, y: 80}, {x: 420, y: 320}, {x: 180, y: 320} ],
+            guides: makeGuides(300, 200, 180, [0, 45, 90, 135])
+        },
+        'rectangle': {
+            points: [ {x: 130, y: 120}, {x: 470, y: 120}, {x: 470, y: 280}, {x: 130, y: 280} ],
+            guides: makeGuides(300, 200, 180, [0, 90])
+        },
+        'isoTriangle': {
+            points: [ {x: 300, y: 60}, {x: 440, y: 300}, {x: 160, y: 300} ],
+            guides: makeGuides(300, 200, 180, [90])
+        },
+        'equiTriangle': {
+            points: makeRegularPoly(300, 215, 140, 3), // Centered for visual balance
+            guides: makeGuides(300, 215, 180, [90, 30, 150])
+        },
+        'pentagon': {
+            points: makeRegularPoly(300, 200, 125, 5),
+            guides: makeGuides(300, 200, 180, [18, 54, 90, 126, 162])
+        },
+        'hexagon': {
+            points: makeRegularPoly(300, 200, 125, 6),
+            guides: makeGuides(300, 200, 180, [0, 30, 60, 90, 120, 150])
+        },
+        'octagon': {
+            points: makeRegularPoly(300, 200, 125, 8),
+            guides: makeGuides(300, 200, 180, [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5])
+        },
+        'rhombus': {
+            points: [ {x: 300, y: 60}, {x: 460, y: 200}, {x: 300, y: 340}, {x: 140, y: 200} ],
+            guides: makeGuides(300, 200, 180, [0, 90])
+        },
+        'isoTrapezoid': {
+            points: [ {x: 210, y: 100}, {x: 390, y: 100}, {x: 460, y: 300}, {x: 140, y: 300} ],
+            guides: makeGuides(300, 200, 180, [90])
+        },
+        'trapezoid': { // Normal, no symmetry
+            points: [ {x: 170, y: 100}, {x: 360, y: 100}, {x: 470, y: 300}, {x: 110, y: 300} ],
+            guides: []
+        },
+        'parallelogram': { // No reflective symmetry
+            points: [ {x: 180, y: 100}, {x: 420, y: 100}, {x: 470, y: 300}, {x: 230, y: 300} ],
+            guides: []
+        },
+        'kite': {
+            points: [ {x: 300, y: 40}, {x: 420, y: 150}, {x: 300, y: 360}, {x: 180, y: 150} ],
+            guides: makeGuides(300, 200, 180, [90])
+        },
+        'circle': {
+            points: makeRegularPoly(300, 200, 120, 72), // Looks perfectly round
+            guides: makeGuides(300, 200, 180, [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5])
+        },
+        'skull': {
+            points: generateSkull(300, 200),
+            guides: makeGuides(300, 200, 180, [90])
+        },
+        'wheel': {
+            points: generateWheel(300, 200),
+            guides: makeGuides(300, 200, 180, [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5])
+        }
+    };
+
+    function loadShape(shapeKey) {
+        currentShapeKey = shapeKey;
+        currentPoints = shapesData[shapeKey].points.map(p => ({x: p.x, y: p.y}));
+        foldSlider.value = 0;
+        foldAngleDeg = 0;
+        axis = { x1: 300, y1: 30, x2: 300, y2: 370 }; // Reset Line
+        draw();
+    }
+
+    function getDistance(x1, y1, x2, y2) { return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2); }
+
+    // --- Interactive Mouse Logic ---
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+        mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        if (getDistance(mouseX, mouseY, axis.x1, axis.y1) < 20) { dragHandle = 'p1'; }
+        else if (getDistance(mouseX, mouseY, axis.x2, axis.y2) < 20) { dragHandle = 'p2'; }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+        mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+        
+        if (!dragHandle) {
+            canvas.style.cursor = (getDistance(mouseX, mouseY, axis.x1, axis.y1) < 20 || getDistance(mouseX, mouseY, axis.x2, axis.y2) < 20) ? 'grab' : 'default';
+        } else {
+            canvas.style.cursor = 'grabbing';
+            let targetX = mouseX, targetY = mouseY;
+            
+            // Magnetic snapping to guides
+            shapesData[currentShapeKey].guides.forEach(g => {
+                if (getDistance(mouseX, mouseY, g.x1, g.y1) < 30) { targetX = g.x1; targetY = g.y1; }
+                else if (getDistance(mouseX, mouseY, g.x2, g.y2) < 30) { targetX = g.x2; targetY = g.y2; }
+            });
+
+            if (dragHandle === 'p1') { axis.x1 = targetX; axis.y1 = targetY; }
+            else if (dragHandle === 'p2') { axis.x2 = targetX; axis.y2 = targetY; }
+        }
+        draw();
+    });
+
+    canvas.addEventListener('mouseup', () => { dragHandle = null; canvas.style.cursor = 'default'; draw(); });
+    canvas.addEventListener('mouseout', () => { if(!dragHandle){ mouseX = -100; mouseY = -100; draw(); } });
+
+    // Link Sidebar Buttons
+    buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            buttons.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            loadShape(e.target.getAttribute('data-shape'));
+        });
+    });
+
+    foldSlider.addEventListener('input', (e) => {
+        foldAngleDeg = parseInt(e.target.value);
+        draw();
+    });
+
+
+    // --- Core Polygon Splitting Math Engine ---
+    function getSide(p, A, B) {
+        let val = (B.x - A.x) * (p.y - A.y) - (B.y - A.y) * (p.x - A.x);
+        if (Math.abs(val) < 0.0001) return 0;
+        return val;
+    }
+
+    function getIntersection(p1, p2, A, B) {
+        const x1 = p1.x, y1 = p1.y, x2 = p2.x, y2 = p2.y;
+        const x3 = A.x, y3 = A.y, x4 = B.x, y4 = B.y;
+        const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (Math.abs(denom) < 0.0001) return null; 
+        const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+        return { x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) };
+    }
+
+    function getCenter(poly) {
+        if (!poly || poly.length === 0) return null;
+        let sumX = 0, sumY = 0;
+        for (let p of poly) { sumX += p.x; sumY += p.y; }
+        return { x: sumX / poly.length, y: sumY / poly.length };
+    }
+
+    function removeDuplicates(poly) {
+        if (!poly || poly.length === 0) return [];
+        let res = [poly[0]];
+        for (let i = 1; i < poly.length; i++) {
+            let prev = res[res.length - 1];
+            let curr = poly[i];
+            if (Math.abs(prev.x - curr.x) > 0.01 || Math.abs(prev.y - curr.y) > 0.01) { res.push(curr); }
+        }
+        return res;
+    }
+
+    function splitShape(points, axis) {
+        let poly1 = [], poly2 = [];
+        const A = {x: axis.x1, y: axis.y1}, B = {x: axis.x2, y: axis.y2};
+        let n = points.length;
+
+        if(n === 0) return { foldPoly: [], fixedPoly: [] };
+
+        for (let i = 0; i < n; i++) {
+            let curr = points[i], next = points[(i + 1) % n];
+            let currSide = getSide(curr, A, B), nextSide = getSide(next, A, B);
+            
+            if (currSide >= 0) poly1.push(curr);
+            if (currSide <= 0) poly2.push(curr);
+            
+            if ((currSide > 0 && nextSide < 0) || (currSide < 0 && nextSide > 0)) {
+                let inter = getIntersection(curr, next, A, B);
+                if (inter) { poly1.push(inter); poly2.push(inter); }
+            }
+        }
+
+        poly1 = removeDuplicates(poly1);
+        poly2 = removeDuplicates(poly2);
+        let c1 = getCenter(poly1), c2 = getCenter(poly2);
+        
+        if (c1 && c2) {
+            if (Math.abs(c1.x - c2.x) < 0.1) {
+                return (c1.y < c2.y) ? { foldPoly: poly1, fixedPoly: poly2 } : { foldPoly: poly2, fixedPoly: poly1 };
+            } else {
+                return (c1.x < c2.x) ? { foldPoly: poly1, fixedPoly: poly2 } : { foldPoly: poly2, fixedPoly: poly1 };
+            }
+        } else if (c1) {
+            let axisCenter = {x: (A.x+B.x)/2, y: (A.y+B.y)/2}; 
+            return (c1.x < axisCenter.x) ? { foldPoly: poly1, fixedPoly: [] } : { foldPoly: [], fixedPoly: poly1 };
+        } else if (c2) {
+            let axisCenter = {x: (A.x+B.x)/2, y: (A.y+B.y)/2}; 
+            return (c2.x < axisCenter.x) ? { foldPoly: poly2, fixedPoly: [] } : { foldPoly: [], fixedPoly: poly2 };
+        }
+        return { foldPoly: [], fixedPoly: [] };
+    }
+
+    function foldPoint(p, axis, thetaDeg) {
+        const theta = thetaDeg * (Math.PI / 180);
+        const dx = axis.x2 - axis.x1, dy = axis.y2 - axis.y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) return p;
+
+        const ux = dx / len, uy = dy / len;
+        const wx = p.x - axis.x1, wy = p.y - axis.y1;
+
+        const dot = wx * ux + wy * uy;
+        const projx = dot * ux, projy = dot * uy;
+        const perpx = wx - projx, perpy = wy - projy;
+
+        const newX = axis.x1 + projx + perpx * Math.cos(theta);
+        const newY = axis.y1 + projy + perpy * Math.cos(theta);
+        return {x: newX, y: newY};
+    }
+
+    // --- Rendering Engine ---
+    function drawPolygon(points, fillColor, strokeColor, dash = [], lineWidth = 4) {
+        if (!points || points.length === 0) return;
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) { ctx.lineTo(points[i].x, points[i].y); }
+        ctx.closePath();
+        
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.setLineDash(dash);
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+        ctx.setLineDash([]); 
+    }
+
+    function drawGuides() {
+        const guides = shapesData[currentShapeKey].guides;
+        if (!guides) return;
+        guides.forEach(g => {
+            ctx.beginPath(); ctx.moveTo(g.x1, g.y1); ctx.lineTo(g.x2, g.y2);
+            ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(255, 217, 61, 0.4)'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.setLineDash([]);
+            
+            [ {x: g.x1, y: g.y1}, {x: g.x2, y: g.y2} ].forEach(pt => {
+                if (getDistance(mouseX, mouseY, pt.x, pt.y) < 40) {
+                    ctx.beginPath(); ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
+                    ctx.fillStyle = '#FFD93D'; ctx.fill();
+                    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+                }
+            });
+        });
+    }
+
+    function drawAxis() {
+        const dx = axis.x2 - axis.x1, dy = axis.y2 - axis.y1;
+        ctx.beginPath(); ctx.moveTo(axis.x1 - dx * 10, axis.y1 - dy * 10); ctx.lineTo(axis.x2 + dx * 10, axis.y2 + dy * 10);
+        ctx.setLineDash([8, 8]); ctx.strokeStyle = '#2D3142'; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+
+        drawHandle(axis.x1, axis.y1, '#4ECDC4');
+        drawHandle(axis.x2, axis.y2, '#FF6B6B');
+    }
+
+    function drawHandle(x, y, color) {
+        ctx.beginPath(); ctx.arc(x, y, 9, 0, 2 * Math.PI);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 3; ctx.stroke();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawGuides();
+
+        // 1. Ghost Image Silhouette
+        drawPolygon(currentPoints, 'rgba(200, 210, 220, 0.2)', 'rgba(150, 160, 170, 0.4)', [6, 6], 2);
+
+        // 2. Math Slicing Calculation
+        const parts = splitShape(currentPoints, axis);
+
+        // 3. Fixed Half (Teal)
+        drawPolygon(parts.fixedPoly, 'rgba(78, 205, 196, 0.65)', '#2FA79E');
+
+        // 4. Folded Half (Math transform on individual points, Coral)
+        const foldedPoints = parts.foldPoly.map(p => foldPoint(p, axis, foldAngleDeg));
+        let opacity = 0.5 + (foldAngleDeg / 180) * 0.45; 
+        drawPolygon(foldedPoints, `rgba(255, 107, 107, ${opacity})`, '#E14E56');
+
+        drawAxis();
+    }
+
+    loadShape('square');
+</script>
+</body>
+</html>

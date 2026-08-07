@@ -54,69 +54,80 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-        /* ---------- HEADER ---------- */
+        /* ---------- FULL WINDOW HEADER ---------- */
         header {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, var(--teal-deep), var(--purple-deep));
             color: white;
-            padding: 46px 20px 56px;
             text-align: center;
-            border-radius: 0 0 40px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            min-height: 100vh; /* This makes it span the whole window vertically */
             box-shadow: 0 10px 25px rgba(45, 49, 66, 0.15);
         }
 
-        .header-inner { position: relative; z-index: 2; }
+        /* Edge-to-edge Background Image */
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Forces the image to perfectly fill the space */
+            object-position: center;
+            z-index: 0;
+        }
+
+        /* Soft overlay to make text readable over the background */
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(45, 49, 66, 0.6) 0%, rgba(45, 49, 66, 0.25) 50%, rgba(124, 92, 224, 0.95) 100%);
+            z-index: 1;
+        }
+
+        .header-inner { 
+            position: relative; 
+            z-index: 3; 
+            padding: 0 20px;
+        }
 
         .badge {
             display: inline-block;
             background: rgba(255,255,255,0.2);
             border: 1.5px solid rgba(255,255,255,0.5);
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(4px);
             padding: 8px 20px;
             border-radius: 999px;
             font-family: 'Baloo 2', sans-serif;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 1.1rem;
             letter-spacing: .2px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         header h1 {
             font-family: 'Baloo 2', sans-serif;
             margin: 18px 0 0;
-            font-size: 2.6rem;
+            font-size: 4rem; /* Enlarged for the full-screen effect */
             font-weight: 800;
-            text-shadow: 0 3px 0 rgba(0,0,0,0.12);
-        }
-
-        /* New Hero Image Styling */
-        .hero-image {
-            width: 100%;
-            max-width: 650px;
-            height: auto;
-            margin: 20px auto 15px;
-            display: block;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            transition: transform 0.3s ease;
-        }
-        .hero-image:hover {
-            transform: scale(1.02);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
         header p.subtitle {
-            margin: 6px auto 0;
-            font-size: 1.15rem;
+            margin: 10px auto 0;
+            font-size: 1.4rem;
             font-weight: 500;
             color: rgba(255,255,255,0.95);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 0 3px 10px rgba(0,0,0,0.6);
             max-width: 480px;
-            margin-inline: auto;
         }
 
         /* floating confetti shapes inside the header */
-        .shape { position: absolute; z-index: 1; opacity: .5; animation: float 6s ease-in-out infinite; }
+        .shape { position: absolute; z-index: 2; opacity: .7; animation: float 6s ease-in-out infinite; }
         .shape-circle { border-radius: 50%; }
         .shape-diamond { border-radius: 8px; transform: rotate(45deg); }
         .shape-triangle { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
@@ -126,7 +137,7 @@
         .s2 { top: 65%; left: 14%; width: 20px; height: 20px; background: var(--coral); animation-duration: 7s; animation-delay: -2s; }
         .s3 { top: 20%; right: 10%; width: 30px; height: 30px; background: var(--green); animation-duration: 6.5s; animation-delay: -1s; }
         .s4 { top: 70%; right: 16%; width: 22px; height: 22px; background: var(--yellow); animation-duration: 8s; animation-delay: -3s; }
-        .s5 { top: 42%; left: 3%;  width: 18px; height: 18px; background: white; opacity: .6; animation-duration: 5s; animation-delay: -1.5s; }
+        .s5 { top: 42%; left: 3%;  width: 18px; height: 18px; background: white; animation-duration: 5s; animation-delay: -1.5s; }
 
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -138,9 +149,9 @@
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(6px);
-            box-shadow: 0 2px 10px rgba(45,49,66,0.07);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 15px rgba(45,49,66,0.1);
         }
         .site-nav ul {
             list-style: none;
@@ -149,7 +160,7 @@
             justify-content: center;
             flex-wrap: wrap;
             margin: 0;
-            padding: 10px 20px;
+            padding: 12px 20px;
             max-width: 1200px;
             margin-inline: auto;
         }
@@ -159,10 +170,10 @@
             gap: 6px;
             font-family: 'Baloo 2', sans-serif;
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 1rem;
             text-decoration: none;
             color: var(--ink);
-            padding: 8px 18px;
+            padding: 8px 20px;
             border-radius: 999px;
             transition: background .2s ease, color .2s ease;
         }
@@ -171,8 +182,8 @@
 
         /* ---------- SECTIONS (topic chapters) ---------- */
         .section {
-            padding: 54px 0 60px;
-            scroll-margin-top: 76px;
+            padding: 70px 0 80px;
+            scroll-margin-top: 70px;
         }
         /* each new section auto-cycles through these 4 color themes */
         .section:nth-of-type(4n+1) { background: #F1FBFA; --section-accent: var(--teal);   --section-accent-deep: var(--teal-deep); }
@@ -184,38 +195,38 @@
             display: flex;
             align-items: flex-start;
             gap: 18px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
         .section-icon {
             flex: 0 0 auto;
-            width: 58px;
-            height: 58px;
+            width: 64px;
+            height: 64px;
             border-radius: 18px;
             background: var(--section-accent);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.7rem;
+            font-size: 2rem;
             box-shadow: 0 4px 0 rgba(0,0,0,0.08);
             transform: rotate(-3deg);
         }
         .section-head h2 {
             font-family: 'Baloo 2', sans-serif;
             margin: 4px 0 6px;
-            font-size: 1.7rem;
+            font-size: 2rem;
             color: var(--ink);
         }
         .section-head p {
             margin: 0;
             color: var(--muted);
-            font-size: 1rem;
+            font-size: 1.1rem;
             max-width: 540px;
         }
 
         /* ---------- CARD GRID ---------- */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
         }
 
@@ -293,28 +304,18 @@
             outline-offset: 3px;
         }
 
-        /* optional style for a card that isn't ready to play yet */
-        .card.future {
-            box-shadow: none;
-            border: 3px dashed #C9D1DC;
-            opacity: .8;
-        }
-        .card.future .icon-badge { background: #E4E9F0; box-shadow: none; }
-        .card.future .btn { background: #C9D1DC; box-shadow: none; pointer-events: none; cursor: default; }
-
         footer {
             text-align: center;
-            padding: 34px 20px 50px;
+            padding: 40px 20px 60px;
             color: var(--muted);
             font-size: .95rem;
         }
         footer strong { color: var(--ink); font-family: 'Baloo 2', sans-serif; }
 
-        @media (max-width: 480px) {
-            header h1 { font-size: 2rem; }
-            header p.subtitle { font-size: 1rem; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.5rem; }
+            header p.subtitle { font-size: 1.1rem; }
             .section-head { flex-direction: column; align-items: flex-start; }
-            .hero-image { max-width: 90%; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -326,7 +327,10 @@
 <body>
 
     <header id="top">
-        <!-- Floating shapes -->
+        <!-- New Full-Window Background Image -->
+        <img src="math-adventure-hero.png" alt="Children exploring a magical math landscape" class="hero-bg">
+        <div class="hero-overlay"></div>
+
         <div class="shape shape-circle s1"></div>
         <div class="shape shape-star s3"></div>
         <div class="shape shape-triangle s2"></div>
@@ -336,10 +340,6 @@
         <div class="header-inner">
             <span class="badge">🧑‍🏫 Presented by Teacher Quan Nguyen</span>
             <h1>Math Adventure Hub</h1>
-
-            <!-- New Beautiful Hero Landscape Image -->
-            <img src="math-adventure-hero.png" alt="Children exploring a magical math landscape" class="hero-image">
-
             <p class="subtitle">Games, puzzles, and tools to make math click!</p>
         </div>
     </header>
@@ -368,37 +368,13 @@
                 </div>
 
                 <div class="grid">
-                    
-                    <!-- CARD: Carronade -->
-                    <div class="card">
-                        <div class="icon-badge">💥</div>
-                        <h3>Carronade (Solo)</h3>
-                        <p>Practice your spatial estimation by bouncing cannonballs across the fold to sink AI Winnie's ships!</p>
-                        <a href="carronade.html" class="btn">Play Now</a>
-                    </div>
-                    
-                    <!-- CARD: Multiplayer Carronade -->
-                    <div class="card">
-                        <div class="icon-badge">🏴‍☠️</div>
-                        <h3>Multiplayer Carronade</h3>
-                        <p>Challenge a friend to a cannon duel! Test your spatial estimation and mirror symmetry across the fold in real-time.</p>
-                        <a href="Carronade_Multiplayer.html" class="btn">Play Together</a>
-                    </div>
 
                     <!-- CARD: Symmetry Defense Game -->
                     <div class="card">
                         <div class="icon-badge">🪙</div>
-                        <h3>Symmetry Defense-Solo</h3>
+                        <h3>Symmetry Defense</h3>
                         <p>Battle a friend! Place and slide coins on a 4×4 grid to build lines of symmetry — or block theirs.</p>
                         <a href="symmetry-defense.html" class="btn">Play Now</a>
-                    </div>
-                    
-                    <!-- CARD: Multiplayer Symmetry Defense -->
-                    <div class="card">
-                        <div class="icon-badge">🎮</div>
-                        <h3>Symmetry Defense-Multiplayer</h3>
-                        <p>Challenge a friend to Symmetry Defense and play together in real time.</p>
-                        <a href="SymmetryDef_Multiplayer.html" class="btn">Play Together</a>
                     </div>
 
                     <!-- CARD: Folding Platform -->
@@ -409,14 +385,48 @@
                         <a href="reflectional symmetry.html" class="btn">Start Folding</a>
                     </div>
 
-                    <!-- CARD: Rotational Symmetry -->
+                    <!-- CARD: Multiplayer game -->
                     <div class="card">
-                        <div class="icon-badge">🍀</div>
-                        <h3>Rotational Symmetry</h3>
-                        <p>Explore rotation and create stunning patterns with this interactive game.</p>
-                        <a href="rotational symmetry.html" class="btn">Start Rotating</a>
+                        <div class="icon-badge">🎮</div>
+                        <h3>Multiplayer Showdown</h3>
+                        <p>Challenge a friend to Symmetry Defense and play together in real time.</p>
+                        <a href="Multiplayer_SD.html" class="btn">Play Together</a>
                     </div>
 
+                    <!-- CARD: Rotational symmetry -->
+                    <div class="card">
+                        <div class="icon-badge">🔄</div>
+                        <h3>Rotational Symmetry</h3>
+                        <p>Discover how shapes look the same after a rotation. Create your own patterns and explore the math behind them.</p>
+                        <a href="rotational symmetry.html" class="btn">Explore Patterns</a>
+                    </div>
+
+                    <!-- CARD: Carronade multiplayer -->
+                    <div class="card">
+                        <div class="icon-badge">🎮</div>
+                        <h3>Carronade multiplayer</h3>
+                        <p>Master line symmetry and play together in real time.</p>
+                        <a href="Carronade_Multiplayer.html" class="btn">Play Together</a>
+                    </div>
+
+                    <!-- CARD: Carronade -->
+                    <div class="card">
+                        <div class="icon-badge">🎮</div>
+                        <h3>Carronade local game</h3>
+                        <p>Local battleship game for two players.</p>
+                        <a href="carronade.html" class="btn">Play Together</a>
+                    </div>
+
+                    <!-- CARD: Operations -->
+                    <div class="card">
+                        <div class="icon-badge">➕</div>
+                        <h3>Operations maze</h3>
+                        <p>Choose the correct operations to give a correct equation.</p>
+                        <a href="Operations game.html" class="btn">Play</a>
+                    </div>
+
+
+                    </div>
 
                 </div>
             </div>
@@ -451,20 +461,12 @@
                         <a href="tic-tac-toe.html" class="btn">Play Now</a>
                     </div>
 
-                    <!-- CARD: Mega Tic-Tac-Toe -->
+                     <!-- CARD: 5 in a row -->
                     <div class="card">
-                        <div class="icon-badge">➕</div>
-                        <h3>Mega Tic Tac Toe</h3>
-                        <p>Step up to bigger grids! Connect 5 in a row to win in this expanded version of the classic game. Play a friend or challenge the AI.</p>
-                        <a href="Ultimate-5-in-a-row.html" class="btn">Play Now</a>
-                    </div>
-
-                    <!-- CARD: Operation 24 -->
-                    <div class="card">
-                        <div class="icon-badge">🎯</div>
-                        <h3>Operation 24</h3>
-                        <p>Can you hit the target? Use addition, subtraction, multiplication, and division to combine 4 numbers into exactly 24!</p>
-                        <a href="Operations game.html" class="btn">Play Now</a>
+                        <div class="icon-badge">5️⃣</div>
+                        <h3>5 in a Row</h3>
+                        <p>Get five in a row and win! Challenge a friend and test your strategic thinking.</p>
+                        <a href="Ultimate5-in-a-row.html" class="btn">Play Now</a>
                     </div>
 
                 </div>
@@ -475,23 +477,19 @@
         <section id="Strategy" class="section">
             <div class="container">
                 <div class="section-head">
-                    <span class="section-icon">🗺️</span>
+                    <span class="section-icon">🔺</span>
                     <div>
                         <h2>Plan and win</h2>
                         <p>Common games that you play</p>
                     </div>
                 </div>
-                
                 <div class="grid">
-                    
-                    <!-- CARD: Chess -->
                     <div class="card">
                         <div class="icon-badge">♟️</div>
                         <h3>Chess</h3>
                         <p>Let's become the next Magnus Carlsen. Master the board and outsmart your opponent!</p>
                         <a href="chess.html" class="btn">Play Now</a>
                     </div>
-                    
                 </div>
             </div>
         </section>

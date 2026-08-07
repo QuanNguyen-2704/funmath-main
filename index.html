@@ -51,72 +51,83 @@
         body::after { background: var(--teal); bottom: -160px; right: -160px; }
 
         a { color: inherit; }
-
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-        /* ---------- HEADER ---------- */
+        /* ---------- FULL WIDTH HEADER ---------- */
         header {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, var(--teal-deep), var(--purple-deep));
             color: white;
-            padding: 46px 20px 56px;
+            padding: 90px 20px 110px; /* Taller padding to show off the art! */
             text-align: center;
             border-radius: 0 0 40px 40px;
             box-shadow: 0 10px 25px rgba(45, 49, 66, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 50vh; /* Takes up half the screen vertically */
         }
 
-        .header-inner { position: relative; z-index: 2; }
+        /* Edge-to-edge Background Image */
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Forces the image to fill the whole box without stretching */
+            object-position: center;
+            z-index: 0;
+        }
+
+        /* Soft overlay to make white text readable over the bright image */
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(45, 49, 66, 0.6) 0%, rgba(45, 49, 66, 0.25) 50%, rgba(124, 92, 224, 0.8) 100%);
+            z-index: 1;
+        }
+
+        .header-inner { 
+            position: relative; 
+            z-index: 3; /* Keeps text firmly above the image and overlay */
+        }
 
         .badge {
             display: inline-block;
-            background: rgba(255,255,255,0.2);
-            border: 1.5px solid rgba(255,255,255,0.5);
-            backdrop-filter: blur(2px);
+            background: rgba(255,255,255,0.25);
+            border: 1.5px solid rgba(255,255,255,0.6);
+            backdrop-filter: blur(4px);
             padding: 8px 20px;
             border-radius: 999px;
             font-family: 'Baloo 2', sans-serif;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.95rem;
             letter-spacing: .2px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         header h1 {
             font-family: 'Baloo 2', sans-serif;
             margin: 18px 0 0;
-            font-size: 2.6rem;
+            font-size: 3.4rem; /* Made slightly larger for the epic background */
             font-weight: 800;
-            text-shadow: 0 3px 0 rgba(0,0,0,0.12);
-        }
-
-        /* New Hero Image Styling */
-        .hero-image {
-            width: 100%;
-            max-width: 650px;
-            height: auto;
-            margin: 20px auto 15px;
-            display: block;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            transition: transform 0.3s ease;
-        }
-        .hero-image:hover {
-            transform: scale(1.02);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Stronger shadow for readability */
         }
 
         header p.subtitle {
             margin: 6px auto 0;
-            font-size: 1.15rem;
-            font-weight: 500;
+            font-size: 1.25rem;
+            font-weight: 600;
             color: rgba(255,255,255,0.95);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            text-shadow: 0 3px 10px rgba(0,0,0,0.6);
             max-width: 480px;
             margin-inline: auto;
         }
 
-        /* floating confetti shapes inside the header */
-        .shape { position: absolute; z-index: 1; opacity: .5; animation: float 6s ease-in-out infinite; }
+        /* Floating confetti shapes inside the header */
+        .shape { position: absolute; z-index: 2; opacity: .7; animation: float 6s ease-in-out infinite; }
         .shape-circle { border-radius: 50%; }
         .shape-diamond { border-radius: 8px; transform: rotate(45deg); }
         .shape-triangle { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
@@ -126,7 +137,7 @@
         .s2 { top: 65%; left: 14%; width: 20px; height: 20px; background: var(--coral); animation-duration: 7s; animation-delay: -2s; }
         .s3 { top: 20%; right: 10%; width: 30px; height: 30px; background: var(--green); animation-duration: 6.5s; animation-delay: -1s; }
         .s4 { top: 70%; right: 16%; width: 22px; height: 22px; background: var(--yellow); animation-duration: 8s; animation-delay: -3s; }
-        .s5 { top: 42%; left: 3%;  width: 18px; height: 18px; background: white; opacity: .6; animation-duration: 5s; animation-delay: -1.5s; }
+        .s5 { top: 42%; left: 3%;  width: 18px; height: 18px; background: white; animation-duration: 5s; animation-delay: -1.5s; }
 
         @keyframes float {
             0%, 100% { transform: translateY(0) rotate(0deg); }
@@ -143,190 +154,89 @@
             box-shadow: 0 2px 10px rgba(45,49,66,0.07);
         }
         .site-nav ul {
-            list-style: none;
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin: 0;
-            padding: 10px 20px;
-            max-width: 1200px;
-            margin-inline: auto;
+            list-style: none; display: flex; gap: 8px; justify-content: center;
+            flex-wrap: wrap; margin: 0; padding: 10px 20px; max-width: 1200px; margin-inline: auto;
         }
         .site-nav a {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'Baloo 2', sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            text-decoration: none;
-            color: var(--ink);
-            padding: 8px 18px;
-            border-radius: 999px;
-            transition: background .2s ease, color .2s ease;
+            display: inline-flex; align-items: center; gap: 6px; font-family: 'Baloo 2', sans-serif;
+            font-weight: 700; font-size: 0.95rem; text-decoration: none; color: var(--ink);
+            padding: 8px 18px; border-radius: 999px; transition: background .2s ease, color .2s ease;
         }
         .site-nav a:hover { background: var(--bg-top); }
         .site-nav a.active { background: var(--ink); color: #fff; }
 
-        /* ---------- SECTIONS (topic chapters) ---------- */
-        .section {
-            padding: 54px 0 60px;
-            scroll-margin-top: 76px;
-        }
-        /* each new section auto-cycles through these 4 color themes */
+        /* ---------- SECTIONS & GRIDS ---------- */
+        .section { padding: 54px 0 60px; scroll-margin-top: 76px; }
         .section:nth-of-type(4n+1) { background: #F1FBFA; --section-accent: var(--teal);   --section-accent-deep: var(--teal-deep); }
         .section:nth-of-type(4n+2) { background: #FFF6EF; --section-accent: var(--coral);  --section-accent-deep: var(--coral-deep); }
         .section:nth-of-type(4n+3) { background: #F6F2FF; --section-accent: var(--purple); --section-accent-deep: var(--purple-deep); }
         .section:nth-of-type(4n+4) { background: #F0FAF1; --section-accent: var(--green);  --section-accent-deep: var(--green-deep); }
 
-        .section-head {
-            display: flex;
-            align-items: flex-start;
-            gap: 18px;
-            margin-bottom: 30px;
-        }
+        .section-head { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 30px; }
         .section-icon {
-            flex: 0 0 auto;
-            width: 58px;
-            height: 58px;
-            border-radius: 18px;
-            background: var(--section-accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.7rem;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.08);
-            transform: rotate(-3deg);
+            flex: 0 0 auto; width: 58px; height: 58px; border-radius: 18px; background: var(--section-accent);
+            display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.08); transform: rotate(-3deg);
         }
-        .section-head h2 {
-            font-family: 'Baloo 2', sans-serif;
-            margin: 4px 0 6px;
-            font-size: 1.7rem;
-            color: var(--ink);
-        }
-        .section-head p {
-            margin: 0;
-            color: var(--muted);
-            font-size: 1rem;
-            max-width: 540px;
-        }
+        .section-head h2 { font-family: 'Baloo 2', sans-serif; margin: 4px 0 6px; font-size: 1.7rem; color: var(--ink); }
+        .section-head p { margin: 0; color: var(--muted); font-size: 1rem; max-width: 540px; }
 
-        /* ---------- CARD GRID ---------- */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 30px;
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 28px;
-            padding: 34px 26px 30px;
+            background: var(--card-bg); border-radius: 28px; padding: 34px 26px 30px;
             box-shadow: 0 6px 0 var(--accent-deep), 0 10px 22px rgba(45,49,66,0.08);
             transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
         }
         .card:hover {
             transform: translateY(-6px);
             box-shadow: 0 10px 0 var(--accent-deep), 0 18px 28px rgba(45,49,66,0.12);
         }
 
-        /* card accent colors auto-rotate too, independent of section theme */
         .grid .card:nth-of-type(4n+1) { --accent: var(--coral);  --accent-deep: var(--coral-deep); }
         .grid .card:nth-of-type(4n+2) { --accent: var(--teal);   --accent-deep: var(--teal-deep); }
         .grid .card:nth-of-type(4n+3) { --accent: var(--purple); --accent-deep: var(--purple-deep); }
         .grid .card:nth-of-type(4n+4) { --accent: var(--green);  --accent-deep: var(--green-deep); }
 
         .icon-badge {
-            width: 84px;
-            height: 84px;
-            border-radius: 50%;
-            background: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.4rem;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.08);
-            transform: rotate(-4deg);
-            transition: transform .25s ease;
-            margin-bottom: 16px;
+            width: 84px; height: 84px; border-radius: 50%; background: var(--accent);
+            display: flex; align-items: center; justify-content: center; font-size: 2.4rem;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.08); transform: rotate(-4deg); transition: transform .25s ease; margin-bottom: 16px;
         }
         .card:hover .icon-badge { transform: rotate(5deg) scale(1.08); }
 
-        .card h3 {
-            font-family: 'Baloo 2', sans-serif;
-            margin: 0 0 12px;
-            color: var(--ink);
-            font-size: 1.35rem;
-            font-weight: 700;
-        }
-
-        .card p {
-            color: var(--muted);
-            margin: 0 0 24px;
-            flex-grow: 1;
-            font-size: 1rem;
-        }
+        .card h3 { font-family: 'Baloo 2', sans-serif; margin: 0 0 12px; color: var(--ink); font-size: 1.35rem; font-weight: 700; }
+        .card p { color: var(--muted); margin: 0 0 24px; flex-grow: 1; font-size: 1rem; }
 
         .btn {
-            background: var(--accent-deep);
-            color: white;
-            text-decoration: none;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-family: 'Baloo 2', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.18);
-            transition: transform .15s ease, box-shadow .15s ease;
-            display: inline-block;
+            background: var(--accent-deep); color: white; text-decoration: none; padding: 13px 28px;
+            border-radius: 999px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.18); transition: transform .15s ease, box-shadow .15s ease; display: inline-block;
         }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.18); }
         .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
 
-        a:focus-visible, .btn:focus-visible {
-            outline: 3px solid var(--ink);
-            outline-offset: 3px;
-        }
-
-        /* optional style for a card that isn't ready to play yet */
-        .card.future {
-            box-shadow: none;
-            border: 3px dashed #C9D1DC;
-            opacity: .8;
-        }
-        .card.future .icon-badge { background: #E4E9F0; box-shadow: none; }
-        .card.future .btn { background: #C9D1DC; box-shadow: none; pointer-events: none; cursor: default; }
-
-        footer {
-            text-align: center;
-            padding: 34px 20px 50px;
-            color: var(--muted);
-            font-size: .95rem;
-        }
+        footer { text-align: center; padding: 34px 20px 50px; color: var(--muted); font-size: .95rem; }
         footer strong { color: var(--ink); font-family: 'Baloo 2', sans-serif; }
 
-        @media (max-width: 480px) {
-            header h1 { font-size: 2rem; }
-            header p.subtitle { font-size: 1rem; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.5rem; }
+            header { min-height: 40vh; padding: 60px 20px 80px;}
             .section-head { flex-direction: column; align-items: flex-start; }
-            .hero-image { max-width: 90%; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            html { scroll-behavior: auto; }
-            *, *::before, *::after { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ============ HEADER (Massive Hero Banner) ============ -->
     <header id="top">
-        <!-- Floating shapes -->
+        <!-- Edge-to-Edge Image Background -->
+        <img src="image_f17197.png" alt="Children exploring a magical math landscape" class="hero-bg">
+        <!-- Soft gradient overlay for text readability -->
+        <div class="hero-overlay"></div>
+
+        <!-- Ambient floating particles -->
         <div class="shape shape-circle s1"></div>
         <div class="shape shape-star s3"></div>
         <div class="shape shape-triangle s2"></div>
@@ -336,10 +246,6 @@
         <div class="header-inner">
             <span class="badge">🧑‍🏫 Presented by Teacher Quan Nguyen</span>
             <h1>Math Adventure Hub</h1>
-
-            <!-- New Beautiful Hero Landscape Image -->
-            <img src="math-adventure-hero.png" alt="Children exploring a magical math landscape" class="hero-image">
-
             <p class="subtitle">Games, puzzles, and tools to make math click!</p>
         </div>
     </header>
@@ -369,7 +275,7 @@
 
                 <div class="grid">
                     
-                    <!-- CARD: Carronade -->
+                    <!-- CARD: Carronade (Solo) -->
                     <div class="card">
                         <div class="icon-badge">💥</div>
                         <h3>Carronade (Solo)</h3>
@@ -388,17 +294,17 @@
                     <!-- CARD: Symmetry Defense Game -->
                     <div class="card">
                         <div class="icon-badge">🪙</div>
-                        <h3>Symmetry Defense-Solo</h3>
-                        <p>Battle a friend! Place and slide coins on a 4×4 grid to build lines of symmetry — or block theirs.</p>
+                        <h3>Symmetry Defense</h3>
+                        <p>Battle a friend locally! Place and slide coins on a 4×4 grid to build lines of symmetry — or block theirs.</p>
                         <a href="symmetry-defense.html" class="btn">Play Now</a>
                     </div>
                     
                     <!-- CARD: Multiplayer Symmetry Defense -->
                     <div class="card">
                         <div class="icon-badge">🎮</div>
-                        <h3>Symmetry Defense-Multiplayer</h3>
-                        <p>Challenge a friend to Symmetry Defense and play together in real time.</p>
-                        <a href="SymmetryDef_Multiplayer.html" class="btn">Play Together</a>
+                        <h3>Online Showdown</h3>
+                        <p>Challenge a friend anywhere to Symmetry Defense! Play together over the internet in real time.</p>
+                        <a href="Multiplayer_SD.html" class="btn">Play Together</a>
                     </div>
 
                     <!-- CARD: Folding Platform -->
@@ -408,15 +314,6 @@
                         <p>Doodle a wacky shape, drop in a mirror line, then fold the page to see if it matches perfectly.</p>
                         <a href="reflectional symmetry.html" class="btn">Start Folding</a>
                     </div>
-
-                    <!-- CARD: Rotational Symmetry -->
-                    <div class="card">
-                        <div class="icon-badge">🍀</div>
-                        <h3>Rotational Symmetry</h3>
-                        <p>Explore rotation and create stunning patterns with this interactive game.</p>
-                        <a href="rotational symmetry.html" class="btn">Start Rotating</a>
-                    </div>
-
 
                 </div>
             </div>
@@ -435,11 +332,27 @@
 
                 <div class="grid">
 
+                    <!-- CARD: Operation 24 -->
+                    <div class="card">
+                        <div class="icon-badge">🎯</div>
+                        <h3>Operation 24</h3>
+                        <p>Can you hit the target? Use addition, subtraction, multiplication, and division to combine 4 numbers into exactly 24!</p>
+                        <a href="operation-24.html" class="btn">Play Now</a>
+                    </div>
+
+                    <!-- CARD: Ultimate Gomoku -->
+                    <div class="card">
+                        <div class="icon-badge">➕</div>
+                        <h3>Ultimate Gomoku</h3>
+                        <p>Connect 5 in a row to win! Choose your grid size (up to 20x20) and play locally, challenge the computer, or play online.</p>
+                        <a href="ultimate-gomoku.html" class="btn">Play Now</a>
+                    </div>
+
                     <!-- CARD: Sudoku -->
                     <div class="card">
                         <div class="icon-badge">🔢</div>
                         <h3>Sudoku Puzzles</h3>
-                        <p>Fill the grid, flex your brain, and crack number puzzles from easy to expert.</p>
+                        <p>Fill the grid, flex your brain, and crack number puzzles from easy (6x6) to expert (9x9).</p>
                         <a href="sudoku.html" class="btn">Solve Puzzles</a>
                     </div>
 
@@ -447,24 +360,8 @@
                     <div class="card">
                         <div class="icon-badge">❌</div>
                         <h3>Tic Tac Toe</h3>
-                        <p>The classic game of X's and O's! Challenge a friend and test your strategic thinking.</p>
+                        <p>The classic 3x3 game of X's and O's! Challenge a friend locally and test your strategic thinking.</p>
                         <a href="tic-tac-toe.html" class="btn">Play Now</a>
-                    </div>
-
-                    <!-- CARD: Mega Tic-Tac-Toe -->
-                    <div class="card">
-                        <div class="icon-badge">➕</div>
-                        <h3>Mega Tic Tac Toe</h3>
-                        <p>Step up to bigger grids! Connect 5 in a row to win in this expanded version of the classic game. Play a friend or challenge the AI.</p>
-                        <a href="Ultimate-5-in-a-row.html" class="btn">Play Now</a>
-                    </div>
-
-                    <!-- CARD: Operation 24 -->
-                    <div class="card">
-                        <div class="icon-badge">🎯</div>
-                        <h3>Operation 24</h3>
-                        <p>Can you hit the target? Use addition, subtraction, multiplication, and division to combine 4 numbers into exactly 24!</p>
-                        <a href="Operations game.html" class="btn">Play Now</a>
                     </div>
 
                 </div>
@@ -475,10 +372,10 @@
         <section id="Strategy" class="section">
             <div class="container">
                 <div class="section-head">
-                    <span class="section-icon">🗺️</span>
+                    <span class="section-icon">🔺</span>
                     <div>
-                        <h2>Plan and win</h2>
-                        <p>Common games that you play</p>
+                        <h2>Plan and Win</h2>
+                        <p>Master these classic strategy games.</p>
                     </div>
                 </div>
                 

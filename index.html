@@ -51,14 +51,21 @@
         body::after { background: var(--teal); bottom: -160px; right: -160px; }
 
         a { color: inherit; }
-
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
+<<<<<<< HEAD
         /* ---------- FULL WINDOW HEADER ---------- */
+=======
+        /* ---------- FULL WIDTH HEADER ---------- */
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         header {
             position: relative;
             overflow: hidden;
             color: white;
+<<<<<<< HEAD
+=======
+            padding: 90px 20px 110px; /* Taller padding to show off the art! */
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -67,6 +74,11 @@
             width: 100vw;
             min-height: 100vh; /* This makes it span the whole window vertically */
             box-shadow: 0 10px 25px rgba(45, 49, 66, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 50vh; /* Takes up half the screen vertically */
         }
 
         /* Edge-to-edge Background Image */
@@ -76,35 +88,61 @@
             left: 0;
             width: 100%;
             height: 100%;
+<<<<<<< HEAD
             object-fit: cover; /* Forces the image to perfectly fill the space */
+=======
+            object-fit: cover; /* Forces the image to fill the whole box without stretching */
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
             object-position: center;
             z-index: 0;
         }
 
+<<<<<<< HEAD
         /* Soft overlay to make text readable over the background */
         .hero-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(45, 49, 66, 0.6) 0%, rgba(45, 49, 66, 0.25) 50%, rgba(124, 92, 224, 0.95) 100%);
+=======
+        /* Soft overlay to make white text readable over the bright image */
+        .hero-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(45, 49, 66, 0.6) 0%, rgba(45, 49, 66, 0.25) 50%, rgba(124, 92, 224, 0.8) 100%);
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
             z-index: 1;
         }
 
         .header-inner { 
             position: relative; 
+<<<<<<< HEAD
             z-index: 3; 
             padding: 0 20px;
+=======
+            z-index: 3; /* Keeps text firmly above the image and overlay */
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         }
 
         .badge {
             display: inline-block;
+<<<<<<< HEAD
             background: rgba(255,255,255,0.2);
             border: 1.5px solid rgba(255,255,255,0.5);
+=======
+            background: rgba(255,255,255,0.25);
+            border: 1.5px solid rgba(255,255,255,0.6);
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
             backdrop-filter: blur(4px);
             padding: 8px 20px;
             border-radius: 999px;
             font-family: 'Baloo 2', sans-serif;
+<<<<<<< HEAD
             font-weight: 600;
             font-size: 1.1rem;
+=======
+            font-weight: 700;
+            font-size: 0.95rem;
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
             letter-spacing: .2px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
@@ -112,6 +150,7 @@
         header h1 {
             font-family: 'Baloo 2', sans-serif;
             margin: 18px 0 0;
+<<<<<<< HEAD
             font-size: 4rem; /* Enlarged for the full-screen effect */
             font-weight: 800;
             text-shadow: 0 4px 15px rgba(0,0,0,0.5);
@@ -121,12 +160,27 @@
             margin: 10px auto 0;
             font-size: 1.4rem;
             font-weight: 500;
+=======
+            font-size: 3.4rem; /* Made slightly larger for the epic background */
+            font-weight: 800;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5); /* Stronger shadow for readability */
+        }
+
+        header p.subtitle {
+            margin: 6px auto 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
             color: rgba(255,255,255,0.95);
             text-shadow: 0 3px 10px rgba(0,0,0,0.6);
             max-width: 480px;
         }
 
+<<<<<<< HEAD
         /* floating confetti shapes inside the header */
+=======
+        /* Floating confetti shapes inside the header */
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         .shape { position: absolute; z-index: 2; opacity: .7; animation: float 6s ease-in-out infinite; }
         .shape-circle { border-radius: 50%; }
         .shape-diamond { border-radius: 8px; transform: rotate(45deg); }
@@ -154,6 +208,7 @@
             box-shadow: 0 2px 15px rgba(45,49,66,0.1);
         }
         .site-nav ul {
+<<<<<<< HEAD
             list-style: none;
             display: flex;
             gap: 8px;
@@ -176,21 +231,36 @@
             padding: 8px 20px;
             border-radius: 999px;
             transition: background .2s ease, color .2s ease;
+=======
+            list-style: none; display: flex; gap: 8px; justify-content: center;
+            flex-wrap: wrap; margin: 0; padding: 10px 20px; max-width: 1200px; margin-inline: auto;
+        }
+        .site-nav a {
+            display: inline-flex; align-items: center; gap: 6px; font-family: 'Baloo 2', sans-serif;
+            font-weight: 700; font-size: 0.95rem; text-decoration: none; color: var(--ink);
+            padding: 8px 18px; border-radius: 999px; transition: background .2s ease, color .2s ease;
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         }
         .site-nav a:hover { background: var(--bg-top); }
         .site-nav a.active { background: var(--ink); color: #fff; }
 
+<<<<<<< HEAD
         /* ---------- SECTIONS (topic chapters) ---------- */
         .section {
             padding: 70px 0 80px;
             scroll-margin-top: 70px;
         }
         /* each new section auto-cycles through these 4 color themes */
+=======
+        /* ---------- SECTIONS & GRIDS ---------- */
+        .section { padding: 54px 0 60px; scroll-margin-top: 76px; }
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         .section:nth-of-type(4n+1) { background: #F1FBFA; --section-accent: var(--teal);   --section-accent-deep: var(--teal-deep); }
         .section:nth-of-type(4n+2) { background: #FFF6EF; --section-accent: var(--coral);  --section-accent-deep: var(--coral-deep); }
         .section:nth-of-type(4n+3) { background: #F6F2FF; --section-accent: var(--purple); --section-accent-deep: var(--purple-deep); }
         .section:nth-of-type(4n+4) { background: #F0FAF1; --section-accent: var(--green);  --section-accent-deep: var(--green-deep); }
 
+<<<<<<< HEAD
         .section-head {
             display: flex;
             align-items: flex-start;
@@ -221,84 +291,63 @@
             color: var(--muted);
             font-size: 1.1rem;
             max-width: 540px;
+=======
+        .section-head { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 30px; }
+        .section-icon {
+            flex: 0 0 auto; width: 58px; height: 58px; border-radius: 18px; background: var(--section-accent);
+            display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.08); transform: rotate(-3deg);
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         }
+        .section-head h2 { font-family: 'Baloo 2', sans-serif; margin: 4px 0 6px; font-size: 1.7rem; color: var(--ink); }
+        .section-head p { margin: 0; color: var(--muted); font-size: 1rem; max-width: 540px; }
 
+<<<<<<< HEAD
         /* ---------- CARD GRID ---------- */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 30px;
         }
+=======
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; }
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
 
         .card {
-            background: var(--card-bg);
-            border-radius: 28px;
-            padding: 34px 26px 30px;
+            background: var(--card-bg); border-radius: 28px; padding: 34px 26px 30px;
             box-shadow: 0 6px 0 var(--accent-deep), 0 10px 22px rgba(45,49,66,0.08);
             transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
         }
         .card:hover {
             transform: translateY(-6px);
             box-shadow: 0 10px 0 var(--accent-deep), 0 18px 28px rgba(45,49,66,0.12);
         }
 
-        /* card accent colors auto-rotate too, independent of section theme */
         .grid .card:nth-of-type(4n+1) { --accent: var(--coral);  --accent-deep: var(--coral-deep); }
         .grid .card:nth-of-type(4n+2) { --accent: var(--teal);   --accent-deep: var(--teal-deep); }
         .grid .card:nth-of-type(4n+3) { --accent: var(--purple); --accent-deep: var(--purple-deep); }
         .grid .card:nth-of-type(4n+4) { --accent: var(--green);  --accent-deep: var(--green-deep); }
 
         .icon-badge {
-            width: 84px;
-            height: 84px;
-            border-radius: 50%;
-            background: var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.4rem;
-            box-shadow: 0 5px 0 rgba(0,0,0,0.08);
-            transform: rotate(-4deg);
-            transition: transform .25s ease;
-            margin-bottom: 16px;
+            width: 84px; height: 84px; border-radius: 50%; background: var(--accent);
+            display: flex; align-items: center; justify-content: center; font-size: 2.4rem;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.08); transform: rotate(-4deg); transition: transform .25s ease; margin-bottom: 16px;
         }
         .card:hover .icon-badge { transform: rotate(5deg) scale(1.08); }
 
-        .card h3 {
-            font-family: 'Baloo 2', sans-serif;
-            margin: 0 0 12px;
-            color: var(--ink);
-            font-size: 1.35rem;
-            font-weight: 700;
-        }
-
-        .card p {
-            color: var(--muted);
-            margin: 0 0 24px;
-            flex-grow: 1;
-            font-size: 1rem;
-        }
+        .card h3 { font-family: 'Baloo 2', sans-serif; margin: 0 0 12px; color: var(--ink); font-size: 1.35rem; font-weight: 700; }
+        .card p { color: var(--muted); margin: 0 0 24px; flex-grow: 1; font-size: 1rem; }
 
         .btn {
-            background: var(--accent-deep);
-            color: white;
-            text-decoration: none;
-            padding: 13px 28px;
-            border-radius: 999px;
-            font-family: 'Baloo 2', sans-serif;
-            font-weight: 700;
-            font-size: 1rem;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.18);
-            transition: transform .15s ease, box-shadow .15s ease;
-            display: inline-block;
+            background: var(--accent-deep); color: white; text-decoration: none; padding: 13px 28px;
+            border-radius: 999px; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1rem;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.18); transition: transform .15s ease, box-shadow .15s ease; display: inline-block;
         }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.18); }
         .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
 
+<<<<<<< HEAD
         a:focus-visible, .btn:focus-visible {
             outline: 3px solid var(--ink);
             outline-offset: 3px;
@@ -310,10 +359,14 @@
             color: var(--muted);
             font-size: .95rem;
         }
+=======
+        footer { text-align: center; padding: 34px 20px 50px; color: var(--muted); font-size: .95rem; }
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         footer strong { color: var(--ink); font-family: 'Baloo 2', sans-serif; }
 
         @media (max-width: 600px) {
             header h1 { font-size: 2.5rem; }
+<<<<<<< HEAD
             header p.subtitle { font-size: 1.1rem; }
             .section-head { flex-direction: column; align-items: flex-start; }
         }
@@ -321,16 +374,30 @@
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
             *, *::before, *::after { animation: none !important; transition: none !important; }
+=======
+            header { min-height: 40vh; padding: 60px 20px 80px;}
+            .section-head { flex-direction: column; align-items: flex-start; }
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         }
     </style>
 </head>
 <body>
 
+    <!-- ============ HEADER (Massive Hero Banner) ============ -->
     <header id="top">
+<<<<<<< HEAD
         <!-- New Full-Window Background Image -->
         <img src="math-adventure-hero.png" alt="Children exploring a magical math landscape" class="hero-bg">
         <div class="hero-overlay"></div>
 
+=======
+        <!-- Edge-to-Edge Image Background -->
+        <img src="image_f17197.png" alt="Children exploring a magical math landscape" class="hero-bg">
+        <!-- Soft gradient overlay for text readability -->
+        <div class="hero-overlay"></div>
+
+        <!-- Ambient floating particles -->
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
         <div class="shape shape-circle s1"></div>
         <div class="shape shape-star s3"></div>
         <div class="shape shape-triangle s2"></div>
@@ -368,14 +435,47 @@
                 </div>
 
                 <div class="grid">
+<<<<<<< HEAD
+=======
+                    
+                    <!-- CARD: Carronade (Solo) -->
+                    <div class="card">
+                        <div class="icon-badge">💥</div>
+                        <h3>Carronade (Solo)</h3>
+                        <p>Practice your spatial estimation by bouncing cannonballs across the fold to sink AI Winnie's ships!</p>
+                        <a href="carronade.html" class="btn">Play Now</a>
+                    </div>
+                    
+                    <!-- CARD: Multiplayer Carronade -->
+                    <div class="card">
+                        <div class="icon-badge">🏴‍☠️</div>
+                        <h3>Multiplayer Carronade</h3>
+                        <p>Challenge a friend to a cannon duel! Test your spatial estimation and mirror symmetry across the fold in real-time.</p>
+                        <a href="Carronade_Multiplayer.html" class="btn">Play Together</a>
+                    </div>
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
 
                     <!-- CARD: Symmetry Defense Game -->
                     <div class="card">
                         <div class="icon-badge">🪙</div>
                         <h3>Symmetry Defense</h3>
+<<<<<<< HEAD
                         <p>Battle a friend! Place and slide coins on a 4×4 grid to build lines of symmetry — or block theirs.</p>
                         <a href="symmetry-defense.html" class="btn">Play Now</a>
                     </div>
+=======
+                        <p>Battle a friend locally! Place and slide coins on a 4×4 grid to build lines of symmetry — or block theirs.</p>
+                        <a href="symmetry-defense.html" class="btn">Play Now</a>
+                    </div>
+                    
+                    <!-- CARD: Multiplayer Symmetry Defense -->
+                    <div class="card">
+                        <div class="icon-badge">🎮</div>
+                        <h3>Online Showdown</h3>
+                        <p>Challenge a friend anywhere to Symmetry Defense! Play together over the internet in real time.</p>
+                        <a href="Multiplayer_SD.html" class="btn">Play Together</a>
+                    </div>
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
 
                     <!-- CARD: Folding Platform -->
                     <div class="card">
@@ -385,6 +485,7 @@
                         <a href="reflectional symmetry.html" class="btn">Start Folding</a>
                     </div>
 
+<<<<<<< HEAD
                     <!-- CARD: Multiplayer game -->
                     <div class="card">
                         <div class="icon-badge">🎮</div>
@@ -428,6 +529,8 @@
 
                     </div>
 
+=======
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
                 </div>
             </div>
         </section>
@@ -445,11 +548,27 @@
 
                 <div class="grid">
 
+                    <!-- CARD: Operation 24 -->
+                    <div class="card">
+                        <div class="icon-badge">🎯</div>
+                        <h3>Operation 24</h3>
+                        <p>Can you hit the target? Use addition, subtraction, multiplication, and division to combine 4 numbers into exactly 24!</p>
+                        <a href="operation-24.html" class="btn">Play Now</a>
+                    </div>
+
+                    <!-- CARD: Ultimate Gomoku -->
+                    <div class="card">
+                        <div class="icon-badge">➕</div>
+                        <h3>Ultimate Gomoku</h3>
+                        <p>Connect 5 in a row to win! Choose your grid size (up to 20x20) and play locally, challenge the computer, or play online.</p>
+                        <a href="ultimate-gomoku.html" class="btn">Play Now</a>
+                    </div>
+
                     <!-- CARD: Sudoku -->
                     <div class="card">
                         <div class="icon-badge">🔢</div>
                         <h3>Sudoku Puzzles</h3>
-                        <p>Fill the grid, flex your brain, and crack number puzzles from easy to expert.</p>
+                        <p>Fill the grid, flex your brain, and crack number puzzles from easy (6x6) to expert (9x9).</p>
                         <a href="sudoku.html" class="btn">Solve Puzzles</a>
                     </div>
 
@@ -457,10 +576,11 @@
                     <div class="card">
                         <div class="icon-badge">❌</div>
                         <h3>Tic Tac Toe</h3>
-                        <p>The classic game of X's and O's! Challenge a friend and test your strategic thinking.</p>
+                        <p>The classic 3x3 game of X's and O's! Challenge a friend locally and test your strategic thinking.</p>
                         <a href="tic-tac-toe.html" class="btn">Play Now</a>
                     </div>
 
+<<<<<<< HEAD
                      <!-- CARD: 5 in a row -->
                     <div class="card">
                         <div class="icon-badge">5️⃣</div>
@@ -469,6 +589,8 @@
                         <a href="Ultimate5-in-a-row.html" class="btn">Play Now</a>
                     </div>
 
+=======
+>>>>>>> c6833a00cf6fe85538c0c2bbb4b7558574957c3f
                 </div>
             </div>
         </section>
@@ -479,8 +601,8 @@
                 <div class="section-head">
                     <span class="section-icon">🔺</span>
                     <div>
-                        <h2>Plan and win</h2>
-                        <p>Common games that you play</p>
+                        <h2>Plan and Win</h2>
+                        <p>Master these classic strategy games.</p>
                     </div>
                 </div>
                 <div class="grid">

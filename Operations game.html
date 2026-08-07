@@ -134,6 +134,18 @@
         .hm-op-slot.filled { border-style: solid; border-color: var(--purple); background: #F5F0FF; }
         .hm-op-slot:active { transform: scale(0.9); }
 
+        /* The new Equals 24 text */
+        .hm-equals {
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            color: var(--ink);
+            padding-left: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         /* ---------- CONTROLS ---------- */
         .controls { margin-top: 20px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
         .game-btn {
@@ -169,6 +181,7 @@
             .hm-num { width: 45px; height: 60px; font-size: 1.5rem; }
             .bracket-slot { width: 20px; height: 45px; font-size: 1.4rem; border-width: 1px; }
             .hm-op-slot { width: 35px; height: 35px; font-size: 1.4rem; border-width: 1px; }
+            .hm-equals { font-size: 1.8rem; padding-left: 4px; }
         }
     </style>
 </head>
@@ -418,6 +431,12 @@
                     eqBuilder.appendChild(opEl);
                 }
             }
+            
+            // Equals 24 static element
+            const equalsEl = document.createElement('div');
+            equalsEl.className = 'hm-equals';
+            equalsEl.innerText = '= 24';
+            eqBuilder.appendChild(equalsEl);
         }
 
         function createBracketSlot(index) {

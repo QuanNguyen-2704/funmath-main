@@ -106,7 +106,7 @@
         .vertex-reference-badge text { fill: var(--muted); opacity: 0.85; }
         .vertex-marker-content {
             transform-box: fill-box; transform-origin: center;
-            transform: rotate(calc(-1 * var(--rotation-angle, 0deg)));
+            transform: rotate(var(--counter-rotation-angle, 0deg));
         }
         .vertex-marker-content circle {
             fill: white; stroke: currentColor; stroke-width: 3;
@@ -384,7 +384,7 @@
 
         function updateRotationVisuals(angle, isMatch = false) {
             const data = shapesData[currentShapeKey];
-            fgSvg.style.setProperty('--rotation-angle', `${angle}deg`);
+            fgSvg.style.setProperty('--counter-rotation-angle', `${-angle}deg`);
             fgSvg.style.transform = `rotate(${angle}deg)`;
             readout.innerText = `${angle}°`;
 

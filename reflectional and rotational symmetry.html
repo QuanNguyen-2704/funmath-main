@@ -133,12 +133,11 @@
         }
         .shape-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
-        #reflection-original { opacity: .22; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); }
-        #reflection-copy { opacity: .8; filter: drop-shadow(0 7px 12px rgba(0,0,0,.16)); }
-        #reflection-card.matched #reflection-original { opacity: .5; }
-        #reflection-card.matched #reflection-copy { filter: drop-shadow(0 0 18px var(--shape-glow)); }
-        #reflection-axis { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 7 5; opacity: .7; }
-        .axis-arrow { fill: var(--ink); opacity: .72; }
+        .fold-canvas {
+            position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+            cursor: default; touch-action: none;
+        }
+        .fold-canvas.dragging { cursor: grabbing; }
 
         #rotation-bg { opacity: .38; filter: blur(1px) drop-shadow(0 2px 3px rgba(0,0,0,.22)); }
         #rotation-reference { overflow: visible; }
@@ -168,6 +167,10 @@
         .vertex-marker text { fill: var(--ink); }
 
         .controls { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .control-label {
+            margin-bottom: -4px; color: var(--muted); text-align: center;
+            font-family: 'Baloo 2', sans-serif; font-weight: 700;
+        }
         .slider-row { width: 100%; display: grid; grid-template-columns: 38px 1fr 68px; gap: 10px; align-items: center; }
         .slider-end { color: var(--muted); font-weight: 700; }
         .angle-readout {
@@ -255,32 +258,25 @@
                 <div class="panel-heading">
                     <span class="panel-kicker">Flip</span>
                     <h3 id="reflection-heading">Reflectional Symmetry</h3>
-                    <p>Move the dashed mirror line. A match appears when the reflected copy fits the original.</p>
+                    <p>Drag the coloured dots to set a mirror line, then fold one half over it.</p>
                 </div>
 
                 <div class="canvas-container">
-                    <svg id="reflection-original" class="shape-layer" viewBox="0 0 240 240" aria-hidden="true"></svg>
-                    <svg id="reflection-copy" class="shape-layer" viewBox="0 0 240 240" aria-label="Reflected shape">
-                        <g id="reflection-moving"></g>
-                    </svg>
-                    <svg class="shape-layer" viewBox="0 0 240 240" aria-hidden="true">
-                        <line id="reflection-axis" x1="18" y1="120" x2="222" y2="120"></line>
-                        <polygon id="axis-arrow-left" class="axis-arrow" points="18,120 28,114 28,126"></polygon>
-                        <polygon id="axis-arrow-right" class="axis-arrow" points="222,120 212,114 212,126"></polygon>
-                    </svg>
+                    <canvas id="reflection-canvas" class="fold-canvas" width="240" height="240" aria-label="Interactive fold test. Drag the blue and red dots to move the mirror line."></canvas>
                 </div>
 
                 <div class="controls">
+                    <div class="control-label">Fold the shape over the mirror line</div>
                     <div class="slider-row">
                         <span class="slider-end">0°</span>
-                        <input type="range" id="reflection-slider" min="0" max="180" value="0" aria-label="Mirror line angle">
+                        <input type="range" id="reflection-slider" min="0" max="180" value="0" aria-label="Fold angle">
                         <output class="angle-readout" id="reflection-readout" for="reflection-slider">0°</output>
                     </div>
-                    <div class="feedback-message" id="reflection-feedback" aria-live="polite">Move the mirror line to begin.</div>
+                    <div class="feedback-message" id="reflection-feedback" aria-live="polite">Place the mirror line, then drag the slider to fold.</div>
                     <div class="found-count" id="reflection-found">Found: 0 / 0 mirror lines</div>
                 </div>
 
-                <div class="legend"><span class="legend-swatch"></span><span>The pale shape is fixed; the solid copy is reflected across the dashed line.</span></div>
+                <div class="legend"><span class="legend-swatch"></span><span>The teal half stays still; the coral half folds across the dashed mirror line.</span></div>
             </section>
 
             <section class="symmetry-card" id="rotation-card" aria-labelledby="rotation-heading">
@@ -367,12 +363,8 @@
         const tabsContainer = document.getElementById('shape-tabs');
         const summary = document.getElementById('comparison-summary');
         const reflectionCard = document.getElementById('reflection-card');
-        const reflectionOriginal = document.getElementById('reflection-original');
-        const reflectionCopy = document.getElementById('reflection-copy');
-        const reflectionMoving = document.getElementById('reflection-moving');
-        const reflectionAxis = document.getElementById('reflection-axis');
-        const axisArrowLeft = document.getElementById('axis-arrow-left');
-        const axisArrowRight = document.getElementById('axis-arrow-right');
+        const reflectionCanvas = document.getElementById('reflection-canvas');
+        const reflectionCtx = reflectionCanvas.getContext('2d');
         const reflectionSlider = document.getElementById('reflection-slider');
         const reflectionReadout = document.getElementById('reflection-readout');
         const reflectionFeedback = document.getElementById('reflection-feedback');
@@ -389,6 +381,10 @@
         let currentShapeKey = 'square';
         let foundReflectionAxes = new Set();
         let foundRotations = new Set();
+        let foldAngleDeg = 0;
+        let reflectionPoints = [];
+        let reflectionAxis = { x1: 120, y1: 20, x2: 120, y2: 220 };
+        let dragHandle = null;
 
         function createVertexLabels(vertices, className, offset) {
             return vertices.map(([x, y], index) => {
@@ -418,61 +414,293 @@
             rotationFound.textContent = `Found: ${foundRotations.size} / ${data.rotations.length} matching positions`;
         }
 
-        function reflectionMatrix(angle) {
-            const theta = angle * Math.PI / 180;
-            const a = Math.cos(2 * theta);
-            const b = Math.sin(2 * theta);
-            const e = 120 - 120 * a - 120 * b;
-            const f = 120 - 120 * b + 120 * a;
-            return `matrix(${a.toFixed(6)} ${b.toFixed(6)} ${b.toFixed(6)} ${(-a).toFixed(6)} ${e.toFixed(6)} ${f.toFixed(6)})`;
-        }
-
         function axisDistance(angle, axis) {
             const difference = Math.abs(angle - axis) % 180;
             return Math.min(difference, 180 - difference);
         }
 
-        function updateReflectionVisuals(displayAngle, matchedAxis = null) {
+        function getDistance(x1, y1, x2, y2) {
+            return Math.hypot(x2 - x1, y2 - y1);
+        }
+
+        function makeReflectionGuide(angle) {
+            const radians = angle * Math.PI / 180;
+            const dx = Math.cos(radians) * 100;
+            const dy = Math.sin(radians) * 100;
+            return { x1: 120 - dx, y1: 120 - dy, x2: 120 + dx, y2: 120 + dy, angle };
+        }
+
+        function setReflectionAxis(angle) {
+            const guide = makeReflectionGuide(angle);
+            reflectionAxis = { x1: guide.x1, y1: guide.y1, x2: guide.x2, y2: guide.y2 };
+        }
+
+        function getAxisMatch() {
             const data = shapesData[currentShapeKey];
-            const angle = displayAngle % 180;
-            const axisTransform = `rotate(${angle} 120 120)`;
+            const dx = reflectionAxis.x2 - reflectionAxis.x1;
+            const dy = reflectionAxis.y2 - reflectionAxis.y1;
+            const length = Math.hypot(dx, dy);
+            if (length < 20) return null;
 
-            reflectionMoving.setAttribute('transform', reflectionMatrix(angle));
-            reflectionAxis.setAttribute('transform', axisTransform);
-            axisArrowLeft.setAttribute('transform', axisTransform);
-            axisArrowRight.setAttribute('transform', axisTransform);
-            reflectionReadout.textContent = `${displayAngle}°`;
+            const centreDistance = Math.abs(dy * 120 - dx * 120 + reflectionAxis.x2 * reflectionAxis.y1 - reflectionAxis.y2 * reflectionAxis.x1) / length;
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            angle = (angle + 180) % 180;
 
-            const isMatch = matchedAxis !== null;
+            for (const axis of data.reflectionAxes) {
+                if (centreDistance <= 3 && axisDistance(angle, axis) <= 2.5) return axis;
+            }
+            return null;
+        }
+
+        function getSide(point, a, b) {
+            const value = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+            return Math.abs(value) < .0001 ? 0 : value;
+        }
+
+        function getIntersection(p1, p2, a, b) {
+            const denominator = (p1.x - p2.x) * (a.y - b.y) - (p1.y - p2.y) * (a.x - b.x);
+            if (Math.abs(denominator) < .0001) return null;
+            const t = ((p1.x - a.x) * (a.y - b.y) - (p1.y - a.y) * (a.x - b.x)) / denominator;
+            return { x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) };
+        }
+
+        function polygonCentre(points) {
+            if (!points.length) return null;
+            const sum = points.reduce((total, point) => ({ x: total.x + point.x, y: total.y + point.y }), { x: 0, y: 0 });
+            return { x: sum.x / points.length, y: sum.y / points.length };
+        }
+
+        function removeDuplicatePoints(points) {
+            return points.filter((point, index) => {
+                if (index === 0) return true;
+                const previous = points[index - 1];
+                return Math.abs(previous.x - point.x) > .01 || Math.abs(previous.y - point.y) > .01;
+            });
+        }
+
+        function splitShape(points, axis) {
+            let first = [];
+            let second = [];
+            const a = { x: axis.x1, y: axis.y1 };
+            const b = { x: axis.x2, y: axis.y2 };
+
+            points.forEach((point, index) => {
+                const next = points[(index + 1) % points.length];
+                const pointSide = getSide(point, a, b);
+                const nextSide = getSide(next, a, b);
+                if (pointSide >= 0) first.push(point);
+                if (pointSide <= 0) second.push(point);
+                if ((pointSide > 0 && nextSide < 0) || (pointSide < 0 && nextSide > 0)) {
+                    const intersection = getIntersection(point, next, a, b);
+                    if (intersection) { first.push(intersection); second.push(intersection); }
+                }
+            });
+
+            first = removeDuplicatePoints(first);
+            second = removeDuplicatePoints(second);
+            const firstCentre = polygonCentre(first);
+            const secondCentre = polygonCentre(second);
+
+            if (firstCentre && secondCentre) {
+                if (Math.abs(firstCentre.x - secondCentre.x) < .1) {
+                    return firstCentre.y < secondCentre.y ? { fold: first, fixed: second } : { fold: second, fixed: first };
+                }
+                return firstCentre.x < secondCentre.x ? { fold: first, fixed: second } : { fold: second, fixed: first };
+            }
+            return { fold: firstCentre ? first : second, fixed: [] };
+        }
+
+        function foldPoint(point, axis, angle) {
+            const radians = angle * Math.PI / 180;
+            const dx = axis.x2 - axis.x1;
+            const dy = axis.y2 - axis.y1;
+            const length = Math.hypot(dx, dy);
+            if (!length) return point;
+
+            const ux = dx / length;
+            const uy = dy / length;
+            const wx = point.x - axis.x1;
+            const wy = point.y - axis.y1;
+            const projection = wx * ux + wy * uy;
+            const projectionX = projection * ux;
+            const projectionY = projection * uy;
+            const perpendicularX = wx - projectionX;
+            const perpendicularY = wy - projectionY;
+
+            return {
+                x: axis.x1 + projectionX + perpendicularX * Math.cos(radians),
+                y: axis.y1 + projectionY + perpendicularY * Math.cos(radians)
+            };
+        }
+
+        function drawPolygon(points, fill, stroke, dash = [], lineWidth = 3) {
+            if (!points.length) return;
+            reflectionCtx.beginPath();
+            reflectionCtx.moveTo(points[0].x, points[0].y);
+            points.slice(1).forEach(point => reflectionCtx.lineTo(point.x, point.y));
+            reflectionCtx.closePath();
+            reflectionCtx.fillStyle = fill;
+            reflectionCtx.fill();
+            reflectionCtx.setLineDash(dash);
+            reflectionCtx.strokeStyle = stroke;
+            reflectionCtx.lineWidth = lineWidth;
+            reflectionCtx.stroke();
+            reflectionCtx.setLineDash([]);
+        }
+
+        function drawReflectionGuides() {
+            shapesData[currentShapeKey].reflectionAxes.forEach(angle => {
+                const guide = makeReflectionGuide(angle);
+                reflectionCtx.beginPath();
+                reflectionCtx.moveTo(guide.x1, guide.y1);
+                reflectionCtx.lineTo(guide.x2, guide.y2);
+                reflectionCtx.setLineDash([3, 5]);
+                reflectionCtx.strokeStyle = 'rgba(229,195,54,.28)';
+                reflectionCtx.lineWidth = 1.5;
+                reflectionCtx.stroke();
+                reflectionCtx.setLineDash([]);
+            });
+        }
+
+        function drawHandle(x, y, colour) {
+            reflectionCtx.beginPath();
+            reflectionCtx.arc(x, y, 7, 0, Math.PI * 2);
+            reflectionCtx.fillStyle = colour;
+            reflectionCtx.fill();
+            reflectionCtx.strokeStyle = '#fff';
+            reflectionCtx.lineWidth = 2.5;
+            reflectionCtx.stroke();
+        }
+
+        function drawReflectionAxis() {
+            const dx = reflectionAxis.x2 - reflectionAxis.x1;
+            const dy = reflectionAxis.y2 - reflectionAxis.y1;
+            reflectionCtx.beginPath();
+            reflectionCtx.moveTo(reflectionAxis.x1 - dx * 2, reflectionAxis.y1 - dy * 2);
+            reflectionCtx.lineTo(reflectionAxis.x2 + dx * 2, reflectionAxis.y2 + dy * 2);
+            reflectionCtx.setLineDash([6, 5]);
+            reflectionCtx.strokeStyle = '#2D3142';
+            reflectionCtx.lineWidth = 2;
+            reflectionCtx.stroke();
+            reflectionCtx.setLineDash([]);
+            drawHandle(reflectionAxis.x1, reflectionAxis.y1, '#4ECDC4');
+            drawHandle(reflectionAxis.x2, reflectionAxis.y2, '#FF6B6B');
+        }
+
+        function drawReflection() {
+            reflectionCtx.clearRect(0, 0, reflectionCanvas.width, reflectionCanvas.height);
+            drawReflectionGuides();
+            drawPolygon(reflectionPoints, 'rgba(200,210,220,.2)', 'rgba(150,160,170,.42)', [5, 5], 1.5);
+
+            const parts = splitShape(reflectionPoints, reflectionAxis);
+            drawPolygon(parts.fixed, 'rgba(78,205,196,.68)', '#2FA79E');
+            const folded = parts.fold.map(point => foldPoint(point, reflectionAxis, foldAngleDeg));
+            const opacity = .5 + foldAngleDeg / 180 * .45;
+            drawPolygon(folded, `rgba(255,107,107,${opacity})`, '#E14E56');
+            drawReflectionAxis();
+        }
+
+        function updateReflectionState() {
+            const data = shapesData[currentShapeKey];
+            const matchedAxis = getAxisMatch();
+            const isFullyFolded = foldAngleDeg === 180;
+            const isMatch = isFullyFolded && matchedAxis !== null;
+
+            reflectionReadout.textContent = `${foldAngleDeg}°`;
             reflectionCard.classList.toggle('matched', isMatch);
             reflectionFeedback.classList.toggle('success', isMatch);
 
             if (isMatch) {
                 foundReflectionAxes.add(matchedAxis);
-                reflectionFeedback.textContent = `Mirror match! This is a line of symmetry. (${displayAngle}°)`;
-            } else if (data.reflectionAxes.length === 0) {
-                reflectionFeedback.textContent = 'No mirror line makes this parallelogram match.';
+                reflectionFeedback.textContent = 'The halves match! This is a line of symmetry.';
+            } else if (isFullyFolded && data.reflectionAxes.length === 0) {
+                reflectionFeedback.textContent = 'The halves do not match: this parallelogram has no line of symmetry.';
+            } else if (isFullyFolded) {
+                reflectionFeedback.textContent = 'The halves do not match. Move the mirror line and try again.';
+            } else if (foldAngleDeg > 0) {
+                reflectionFeedback.textContent = 'Keep folding to 180° to test this mirror line.';
             } else {
-                reflectionFeedback.textContent = 'The reflected copy does not match yet.';
+                reflectionFeedback.textContent = 'Drag the coloured dots to choose a line, then fold to 180°.';
             }
+
+            drawReflection();
             updateFoundCounts();
         }
 
         function handleReflection() {
-            const data = shapesData[currentShapeKey];
-            let displayAngle = Number(reflectionSlider.value);
-            let matchedAxis = null;
-
-            for (const axis of data.reflectionAxes) {
-                if (axisDistance(displayAngle, axis) <= 3) {
-                    matchedAxis = axis;
-                    displayAngle = axis === 0 && displayAngle > 90 ? 180 : axis;
-                    reflectionSlider.value = displayAngle;
-                    break;
-                }
+            foldAngleDeg = Number(reflectionSlider.value);
+            if (foldAngleDeg >= 176) {
+                foldAngleDeg = 180;
+                reflectionSlider.value = 180;
             }
-            updateReflectionVisuals(displayAngle, matchedAxis);
+            updateReflectionState();
         }
+
+        function reflectionPointerPosition(event) {
+            const bounds = reflectionCanvas.getBoundingClientRect();
+            return {
+                x: (event.clientX - bounds.left) * reflectionCanvas.width / bounds.width,
+                y: (event.clientY - bounds.top) * reflectionCanvas.height / bounds.height
+            };
+        }
+
+        function snapHandleToGuide(position) {
+            let target = { ...position };
+            let closestDistance = 16;
+            shapesData[currentShapeKey].reflectionAxes.forEach(angle => {
+                const guide = makeReflectionGuide(angle);
+                [{ x: guide.x1, y: guide.y1 }, { x: guide.x2, y: guide.y2 }].forEach(endpoint => {
+                    const distance = getDistance(position.x, position.y, endpoint.x, endpoint.y);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        target = endpoint;
+                    }
+                });
+            });
+            return target;
+        }
+
+        reflectionCanvas.addEventListener('pointerdown', event => {
+            const position = reflectionPointerPosition(event);
+            if (getDistance(position.x, position.y, reflectionAxis.x1, reflectionAxis.y1) < 16) dragHandle = 'first';
+            if (getDistance(position.x, position.y, reflectionAxis.x2, reflectionAxis.y2) < 16) dragHandle = 'second';
+            if (!dragHandle) return;
+            reflectionCanvas.setPointerCapture(event.pointerId);
+            reflectionCanvas.classList.add('dragging');
+        });
+
+        reflectionCanvas.addEventListener('pointermove', event => {
+            const position = reflectionPointerPosition(event);
+            if (!dragHandle) {
+                const overHandle = getDistance(position.x, position.y, reflectionAxis.x1, reflectionAxis.y1) < 16 ||
+                    getDistance(position.x, position.y, reflectionAxis.x2, reflectionAxis.y2) < 16;
+                reflectionCanvas.style.cursor = overHandle ? 'grab' : 'default';
+                return;
+            }
+            const target = snapHandleToGuide({
+                x: Math.max(8, Math.min(232, position.x)),
+                y: Math.max(8, Math.min(232, position.y))
+            });
+            if (dragHandle === 'first') {
+                reflectionAxis.x1 = target.x;
+                reflectionAxis.y1 = target.y;
+            } else {
+                reflectionAxis.x2 = target.x;
+                reflectionAxis.y2 = target.y;
+            }
+            updateReflectionState();
+        });
+
+        function endReflectionDrag(event) {
+            if (!dragHandle) return;
+            dragHandle = null;
+            reflectionCanvas.classList.remove('dragging');
+            reflectionCanvas.style.cursor = 'default';
+            if (reflectionCanvas.hasPointerCapture(event.pointerId)) reflectionCanvas.releasePointerCapture(event.pointerId);
+        }
+
+        reflectionCanvas.addEventListener('pointerup', endReflectionDrag);
+        reflectionCanvas.addEventListener('pointercancel', endReflectionDrag);
 
         function updateRotationVisuals(angle, isMatch) {
             const data = shapesData[currentShapeKey];
@@ -538,10 +766,7 @@
             tabsContainer.style.setProperty('--shape-color', data.color);
             tabsContainer.style.setProperty('--shape-glow', data.glow);
 
-            reflectionOriginal.innerHTML = data.svgInner;
-            reflectionMoving.innerHTML = data.svgInner;
-            reflectionOriginal.style.color = data.color;
-            reflectionCopy.style.color = data.color;
+            reflectionPoints = data.vertices.map(([x, y]) => ({ x, y }));
 
             const referenceLabels = createVertexLabels(data.vertices, 'vertex-reference-badge', data.referenceOffset ?? 14);
             const movingLabels = createVertexLabels(data.vertices, 'vertex-marker', -(data.labelInset ?? 18));
@@ -556,9 +781,10 @@
                 `Lines of reflection: <strong>${data.reflectionAxes.length}</strong><span class="summary-divider">|</span>` +
                 `Order of rotational symmetry: <strong>${data.rotations.length}</strong>`;
 
+            setReflectionAxis(90);
             reflectionSlider.value = 0;
-            const startsOnAxis = data.reflectionAxes.includes(0) ? 0 : null;
-            updateReflectionVisuals(0, startsOnAxis);
+            foldAngleDeg = 0;
+            updateReflectionState();
             rotationSlider.value = 0;
             updateRotationVisuals(0, false);
         }

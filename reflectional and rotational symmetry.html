@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflectional &amp; Rotational Symmetry | Math Adventure Hub</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%9E%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --coral: #FF6B6B; --coral-deep: #E14E56;
+            --teal: #4ECDC4; --teal-deep: #2FA79E;
+            --purple: #A78BFA; --purple-deep: #7C5CE0;
+            --green: #6BCB77; --green-deep: #48A857;
+            --yellow: #FFD93D; --yellow-deep: #E5C336;
+            --ink: #2D3142;
+            --muted: #667085;
+            --bg-top: #EAF6FF;
+            --bg-bottom: #F5F0FF;
+            --card-bg: #FFFFFF;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh; margin: 0; color: var(--ink);
+            font-family: 'Quicksand', system-ui, sans-serif;
+            background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+            overflow-x: hidden;
+        }
+
+        body::before, body::after {
+            content: ""; position: fixed; width: 480px; height: 480px; border-radius: 50%;
+            filter: blur(70px); opacity: .25; z-index: -1;
+        }
+        body::before { background: var(--purple); top: -100px; left: -150px; }
+        body::after { background: var(--teal); bottom: -100px; right: -150px; }
+
+        header {
+            position: sticky; top: 0; z-index: 100; display: grid;
+            grid-template-columns: 1fr auto 1fr; align-items: center;
+            padding: 15px 30px; background: rgba(255,255,255,.82);
+            backdrop-filter: blur(12px); box-shadow: 0 4px 15px rgba(45,49,66,.05);
+        }
+
+        header h1 {
+            margin: 0; color: var(--teal-deep); text-align: center;
+            font-family: 'Baloo 2', sans-serif; font-size: 1.6rem;
+        }
+
+        .back-btn {
+            justify-self: start; display: inline-flex; align-items: center; gap: 8px;
+            width: fit-content; padding: 8px 20px; border-radius: 999px;
+            color: var(--ink); background: #fff; text-decoration: none;
+            font-family: 'Baloo 2', sans-serif; font-weight: 700;
+            box-shadow: 0 4px 0 rgba(45,49,66,.1);
+            transition: transform .15s, box-shadow .15s;
+        }
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(45,49,66,.1); }
+        .back-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        main {
+            width: min(1280px, 100%); margin: 0 auto; padding: 40px 20px 60px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .instructions { margin-bottom: 24px; text-align: center; }
+        .instructions h2 {
+            margin: 0 0 8px; font-family: 'Baloo 2', sans-serif; font-size: 2.2rem;
+        }
+        .instructions p { max-width: 760px; margin: 0 auto; color: var(--muted); font-size: 1.08rem; }
+
+        .tabs {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            max-width: 900px; margin-bottom: 26px;
+        }
+        .tab-btn {
+            padding: 8px 18px; border: 2px solid transparent; border-radius: 999px;
+            color: var(--muted); background: #fff; cursor: pointer;
+            font-family: 'Baloo 2', sans-serif; font-size: 1rem; font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,.05); transition: all .2s ease;
+        }
+        .tab-btn:hover { transform: translateY(-2px); color: var(--ink); }
+        .tab-btn.active {
+            color: #fff; background: var(--shape-color, var(--teal));
+            box-shadow: 0 4px 15px var(--shape-glow, rgba(78,205,196,.4)); transform: scale(1.05);
+        }
+
+        .comparison-summary {
+            width: 100%; margin-bottom: 18px; padding: 13px 20px; border: 2px solid rgba(78,205,196,.2);
+            border-radius: 20px; background: rgba(255,255,255,.75); text-align: center;
+            color: var(--muted); font-weight: 700;
+        }
+        .comparison-summary strong { color: var(--ink); }
+        .summary-divider { display: inline-block; margin: 0 12px; color: #CBD5E1; }
+
+        .comparison-grid { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+
+        .symmetry-card {
+            --shape-color: var(--teal); --shape-glow: rgba(78,205,196,.45);
+            min-width: 0; padding: 28px 26px 26px; border-radius: 34px; background: var(--card-bg);
+            box-shadow: 0 8px 30px rgba(45,49,66,.09); display: flex;
+            flex-direction: column; align-items: center; transition: box-shadow .25s, transform .25s;
+        }
+        .symmetry-card.matched { box-shadow: 0 10px 36px var(--shape-glow); }
+
+        .panel-heading { width: 100%; margin-bottom: 18px; text-align: center; }
+        .panel-kicker {
+            display: inline-block; margin-bottom: 4px; padding: 4px 12px; border-radius: 999px;
+            color: #fff; background: var(--shape-color); font-size: .8rem; font-weight: 800;
+            letter-spacing: .04em; text-transform: uppercase;
+        }
+        .panel-heading h3 { margin: 2px 0 4px; font-family: 'Baloo 2', sans-serif; font-size: 1.65rem; }
+        .panel-heading p { min-height: 42px; margin: 0; color: var(--muted); font-size: .96rem; }
+
+        .canvas-container {
+            position: relative; width: min(320px, 100%); aspect-ratio: 1; margin-bottom: 22px;
+            border-radius: 50%; background: #F8FAFC; overflow: hidden;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,.04);
+        }
+        .canvas-container::before {
+            content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+            background-image: linear-gradient(rgba(45,49,66,.05) 2px, transparent 2px),
+                              linear-gradient(90deg, rgba(45,49,66,.05) 2px, transparent 2px);
+            background-size: 40px 40px; background-position: center;
+        }
+        .canvas-container::after {
+            content: ""; position: absolute; z-index: 8; width: 9px; height: 9px;
+            top: calc(50% - 4.5px); left: calc(50% - 4.5px); border-radius: 50%;
+            background: var(--ink); opacity: .22; pointer-events: none;
+        }
+        .shape-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+        #reflection-original { opacity: .22; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); }
+        #reflection-copy { opacity: .8; filter: drop-shadow(0 7px 12px rgba(0,0,0,.16)); }
+        #reflection-card.matched #reflection-original { opacity: .5; }
+        #reflection-card.matched #reflection-copy { filter: drop-shadow(0 0 18px var(--shape-glow)); }
+        #reflection-axis { stroke: var(--ink); stroke-width: 3; stroke-dasharray: 7 5; opacity: .7; }
+        .axis-arrow { fill: var(--ink); opacity: .72; }
+
+        #rotation-bg { opacity: .38; filter: blur(1px) drop-shadow(0 2px 3px rgba(0,0,0,.22)); }
+        #rotation-reference { overflow: visible; }
+        #rotation-fg {
+            transform-origin: center; transition: filter .25s;
+            filter: drop-shadow(0 7px 12px rgba(0,0,0,.16));
+        }
+        #rotation-card.matched #rotation-bg { opacity: .65; filter: blur(7px); }
+        #rotation-card.matched #rotation-fg { filter: drop-shadow(0 0 19px var(--shape-glow)); }
+
+        .vertex-reference-badge circle {
+            fill: rgba(255,255,255,.94); stroke: currentColor; stroke-width: 2;
+            stroke-dasharray: 3 2; opacity: .72; vector-effect: non-scaling-stroke;
+        }
+        .vertex-reference-badge text, .vertex-marker text {
+            font-family: 'Baloo 2', sans-serif; font-size: 13px; font-weight: 800;
+            text-anchor: middle; dominant-baseline: central; pointer-events: none;
+        }
+        .vertex-reference-badge text { fill: var(--muted); opacity: .86; }
+        .vertex-marker-content {
+            transform-box: fill-box; transform-origin: center;
+            transform: rotate(var(--counter-angle, 0deg));
+        }
+        .vertex-marker-content circle {
+            fill: #fff; stroke: currentColor; stroke-width: 3; vector-effect: non-scaling-stroke;
+        }
+        .vertex-marker text { fill: var(--ink); }
+
+        .controls { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .slider-row { width: 100%; display: grid; grid-template-columns: 38px 1fr 68px; gap: 10px; align-items: center; }
+        .slider-end { color: var(--muted); font-weight: 700; }
+        .angle-readout {
+            min-width: 68px; color: var(--ink); text-align: right;
+            font-family: 'Baloo 2', sans-serif; font-size: 1.55rem; font-weight: 800;
+        }
+
+        input[type=range] { width: 100%; margin: 0; appearance: none; background: transparent; }
+        input[type=range]:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; border-radius: 999px; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 11px; border-radius: 999px; cursor: pointer;
+            background: #E2E8F0; box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            width: 30px; height: 30px; margin-top: -9.5px; border: 4px solid #fff; border-radius: 50%;
+            appearance: none; background: var(--shape-color); cursor: pointer;
+            box-shadow: 0 4px 10px var(--shape-glow);
+        }
+        input[type=range]::-moz-range-track {
+            height: 11px; border-radius: 999px; background: #E2E8F0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,.1);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 22px; height: 22px; border: 4px solid #fff; border-radius: 50%;
+            background: var(--shape-color); cursor: pointer; box-shadow: 0 4px 10px var(--shape-glow);
+        }
+
+        .feedback-message {
+            min-height: 54px; display: flex; align-items: center; justify-content: center;
+            color: var(--muted); text-align: center; font-family: 'Baloo 2', sans-serif;
+            font-size: 1.12rem; font-weight: 700;
+        }
+        .feedback-message.success { color: var(--green-deep); animation: pop .35s ease-out; }
+        .found-count {
+            padding: 6px 12px; border-radius: 999px; color: var(--muted);
+            background: #F1F5F9; font-size: .86rem; font-weight: 700;
+        }
+        .legend {
+            width: 100%; margin-top: 20px; padding-top: 17px; border-top: 1px solid #E2E8F0;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: var(--muted); text-align: center; font-size: .86rem; font-weight: 600;
+        }
+        .legend-swatch { width: 24px; height: 15px; border-radius: 5px; border: 2px dashed var(--shape-color); background: #fff; }
+
+        @keyframes pop { from { transform: scale(.86); opacity: .2; } to { transform: scale(1); opacity: 1; } }
+
+        @media (max-width: 900px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+            .symmetry-card { max-width: 650px; width: 100%; justify-self: center; }
+        }
+
+        @media (max-width: 600px) {
+            header { grid-template-columns: auto 1fr; padding: 12px 14px; }
+            header h1 { font-size: 1.12rem; text-align: right; }
+            .back-btn { padding: 7px 13px; }
+            main { padding: 28px 12px 45px; }
+            .instructions h2 { font-size: 1.8rem; }
+            .symmetry-card { padding: 24px 16px; border-radius: 28px; }
+            .summary-divider { display: block; height: 4px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="back-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Hub
+        </a>
+        <h1>Reflectional &amp; Rotational Symmetry</h1>
+        <div aria-hidden="true"></div>
+    </header>
+
+    <main>
+        <div class="instructions">
+            <h2>Compare Both Symmetries</h2>
+            <p>Choose one shape, then test its mirror lines on the left and its matching rotations on the right.</p>
+        </div>
+
+        <div class="tabs" id="shape-tabs" aria-label="Choose a shape"></div>
+
+        <div class="comparison-summary" id="comparison-summary" aria-live="polite"></div>
+
+        <div class="comparison-grid">
+            <section class="symmetry-card" id="reflection-card" aria-labelledby="reflection-heading">
+                <div class="panel-heading">
+                    <span class="panel-kicker">Flip</span>
+                    <h3 id="reflection-heading">Reflectional Symmetry</h3>
+                    <p>Move the dashed mirror line. A match appears when the reflected copy fits the original.</p>
+                </div>
+
+                <div class="canvas-container">
+                    <svg id="reflection-original" class="shape-layer" viewBox="0 0 240 240" aria-hidden="true"></svg>
+                    <svg id="reflection-copy" class="shape-layer" viewBox="0 0 240 240" aria-label="Reflected shape">
+                        <g id="reflection-moving"></g>
+                    </svg>
+                    <svg class="shape-layer" viewBox="0 0 240 240" aria-hidden="true">
+                        <line id="reflection-axis" x1="18" y1="120" x2="222" y2="120"></line>
+                        <polygon id="axis-arrow-left" class="axis-arrow" points="18,120 28,114 28,126"></polygon>
+                        <polygon id="axis-arrow-right" class="axis-arrow" points="222,120 212,114 212,126"></polygon>
+                    </svg>
+                </div>
+
+                <div class="controls">
+                    <div class="slider-row">
+                        <span class="slider-end">0°</span>
+                        <input type="range" id="reflection-slider" min="0" max="180" value="0" aria-label="Mirror line angle">
+                        <output class="angle-readout" id="reflection-readout" for="reflection-slider">0°</output>
+                    </div>
+                    <div class="feedback-message" id="reflection-feedback" aria-live="polite">Move the mirror line to begin.</div>
+                    <div class="found-count" id="reflection-found">Found: 0 / 0 mirror lines</div>
+                </div>
+
+                <div class="legend"><span class="legend-swatch"></span><span>The pale shape is fixed; the solid copy is reflected across the dashed line.</span></div>
+            </section>
+
+            <section class="symmetry-card" id="rotation-card" aria-labelledby="rotation-heading">
+                <div class="panel-heading">
+                    <span class="panel-kicker">Turn</span>
+                    <h3 id="rotation-heading">Rotational Symmetry</h3>
+                    <p>Rotate the solid shape. Follow the letters until every vertex returns after a full turn.</p>
+                </div>
+
+                <div class="canvas-container">
+                    <svg id="rotation-bg" class="shape-layer" viewBox="0 0 240 240" aria-hidden="true"></svg>
+                    <svg id="rotation-reference" class="shape-layer" viewBox="0 0 240 240" aria-hidden="true"></svg>
+                    <svg id="rotation-fg" class="shape-layer" viewBox="0 0 240 240" aria-label="Rotating labelled shape"></svg>
+                </div>
+
+                <div class="controls">
+                    <div class="slider-row">
+                        <span class="slider-end">0°</span>
+                        <input type="range" id="rotation-slider" min="0" max="360" value="0" aria-label="Rotation angle">
+                        <output class="angle-readout" id="rotation-readout" for="rotation-slider">0°</output>
+                    </div>
+                    <div class="feedback-message" id="rotation-feedback" aria-live="polite">Rotate the shape to begin.</div>
+                    <div class="found-count" id="rotation-found">Found: 0 / 0 matching positions</div>
+                </div>
+
+                <div class="legend"><span class="legend-swatch"></span><span>Faint letters mark the start; solid letters move with the shape and stay upright.</span></div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const shapesData = {
+            triangle: {
+                name: 'Triangle', color: 'var(--coral)', glow: 'rgba(255,107,107,.45)',
+                reflectionAxes: [30, 90, 150], rotations: [120, 240, 360],
+                vertices: [[120,30], [197.94,165], [42.06,165]],
+                svgInner: '<polygon points="120,30 197.94,165 42.06,165" fill="currentColor"/>'
+            },
+            square: {
+                name: 'Square', color: 'var(--teal)', glow: 'rgba(78,205,196,.45)',
+                reflectionAxes: [0, 45, 90, 135], rotations: [90, 180, 270, 360],
+                vertices: [[50,50], [190,50], [190,190], [50,190]],
+                svgInner: '<rect x="50" y="50" width="140" height="140" fill="currentColor"/>'
+            },
+            rectangle: {
+                name: 'Rectangle', color: 'var(--purple)', glow: 'rgba(167,139,250,.45)',
+                reflectionAxes: [0, 90], rotations: [180, 360],
+                vertices: [[30,70], [210,70], [210,170], [30,170]],
+                svgInner: '<rect x="30" y="70" width="180" height="100" fill="currentColor"/>'
+            },
+            pentagon: {
+                name: 'Pentagon', color: 'var(--yellow-deep)', glow: 'rgba(229,195,54,.45)',
+                reflectionAxes: [18, 54, 90, 126, 162], rotations: [72, 144, 216, 288, 360],
+                vertices: [[120,30], [205.59,92.19], [172.9,192.8], [67.1,192.8], [34.41,92.19]],
+                svgInner: '<polygon points="120,30 205.59,92.19 172.9,192.8 67.1,192.8 34.41,92.19" fill="currentColor"/>'
+            },
+            hexagon: {
+                name: 'Hexagon', color: 'var(--green)', glow: 'rgba(107,203,119,.45)',
+                reflectionAxes: [0, 30, 60, 90, 120, 150], rotations: [60, 120, 180, 240, 300, 360],
+                vertices: [[120,30], [197.94,75], [197.94,165], [120,210], [42.06,165], [42.06,75]],
+                svgInner: '<polygon points="120,30 197.94,75 197.94,165 120,210 42.06,165 42.06,75" fill="currentColor"/>'
+            },
+            star: {
+                name: 'Star', color: 'var(--coral-deep)', glow: 'rgba(225,78,86,.45)',
+                reflectionAxes: [18, 54, 90, 126, 162], rotations: [72, 144, 216, 288, 360],
+                labelInset: 10, referenceOffset: 10,
+                vertices: [[120,30], [141.16,90.88], [205.59,92.19], [154.24,131.12], [172.9,192.8], [120,156], [67.1,192.8], [85.76,131.12], [34.41,92.19], [98.84,90.88]],
+                svgInner: '<polygon points="120,30 141.16,90.88 205.59,92.19 154.24,131.12 172.9,192.8 120,156 67.1,192.8 85.76,131.12 34.41,92.19 98.84,90.88" fill="currentColor"/>'
+            },
+            parallelogram: {
+                name: 'Parallelogram', color: 'var(--teal-deep)', glow: 'rgba(47,167,158,.45)',
+                reflectionAxes: [], rotations: [180, 360],
+                vertices: [[60,80], [200,80], [180,160], [40,160]],
+                svgInner: '<polygon points="60,80 200,80 180,160 40,160" fill="currentColor"/>'
+            },
+            rhombus: {
+                name: 'Rhombus', color: 'var(--purple-deep)', glow: 'rgba(124,92,224,.45)',
+                reflectionAxes: [0, 90], rotations: [180, 360],
+                vertices: [[120,30], [190,120], [120,210], [50,120]],
+                svgInner: '<polygon points="120,30 190,120 120,210 50,120" fill="currentColor"/>'
+            }
+        };
+
+        const tabsContainer = document.getElementById('shape-tabs');
+        const summary = document.getElementById('comparison-summary');
+        const reflectionCard = document.getElementById('reflection-card');
+        const reflectionOriginal = document.getElementById('reflection-original');
+        const reflectionCopy = document.getElementById('reflection-copy');
+        const reflectionMoving = document.getElementById('reflection-moving');
+        const reflectionAxis = document.getElementById('reflection-axis');
+        const axisArrowLeft = document.getElementById('axis-arrow-left');
+        const axisArrowRight = document.getElementById('axis-arrow-right');
+        const reflectionSlider = document.getElementById('reflection-slider');
+        const reflectionReadout = document.getElementById('reflection-readout');
+        const reflectionFeedback = document.getElementById('reflection-feedback');
+        const reflectionFound = document.getElementById('reflection-found');
+        const rotationCard = document.getElementById('rotation-card');
+        const rotationBg = document.getElementById('rotation-bg');
+        const rotationReference = document.getElementById('rotation-reference');
+        const rotationFg = document.getElementById('rotation-fg');
+        const rotationSlider = document.getElementById('rotation-slider');
+        const rotationReadout = document.getElementById('rotation-readout');
+        const rotationFeedback = document.getElementById('rotation-feedback');
+        const rotationFound = document.getElementById('rotation-found');
+
+        let currentShapeKey = 'square';
+        let foundReflectionAxes = new Set();
+        let foundRotations = new Set();
+
+        function createVertexLabels(vertices, className, offset) {
+            return vertices.map(([x, y], index) => {
+                const dx = x - 120;
+                const dy = y - 120;
+                const distance = Math.hypot(dx, dy) || 1;
+                const labelX = (x + dx / distance * offset).toFixed(2);
+                const labelY = (y + dy / distance * offset).toFixed(2);
+                const letter = String.fromCharCode(65 + index);
+                const badge = `<circle cx="0" cy="0" r="10"></circle><text x="0" y="0">${letter}</text>`;
+
+                if (className === 'vertex-marker') {
+                    return `<g class="${className}" transform="translate(${labelX} ${labelY})"><g class="vertex-marker-content">${badge}</g></g>`;
+                }
+                return `<g class="${className}" transform="translate(${labelX} ${labelY})">${badge}</g>`;
+            }).join('');
+        }
+
+        function setCardColour(card, data) {
+            card.style.setProperty('--shape-color', data.color);
+            card.style.setProperty('--shape-glow', data.glow);
+        }
+
+        function updateFoundCounts() {
+            const data = shapesData[currentShapeKey];
+            reflectionFound.textContent = `Found: ${foundReflectionAxes.size} / ${data.reflectionAxes.length} mirror lines`;
+            rotationFound.textContent = `Found: ${foundRotations.size} / ${data.rotations.length} matching positions`;
+        }
+
+        function reflectionMatrix(angle) {
+            const theta = angle * Math.PI / 180;
+            const a = Math.cos(2 * theta);
+            const b = Math.sin(2 * theta);
+            const e = 120 - 120 * a - 120 * b;
+            const f = 120 - 120 * b + 120 * a;
+            return `matrix(${a.toFixed(6)} ${b.toFixed(6)} ${b.toFixed(6)} ${(-a).toFixed(6)} ${e.toFixed(6)} ${f.toFixed(6)})`;
+        }
+
+        function axisDistance(angle, axis) {
+            const difference = Math.abs(angle - axis) % 180;
+            return Math.min(difference, 180 - difference);
+        }
+
+        function updateReflectionVisuals(displayAngle, matchedAxis = null) {
+            const data = shapesData[currentShapeKey];
+            const angle = displayAngle % 180;
+            const axisTransform = `rotate(${angle} 120 120)`;
+
+            reflectionMoving.setAttribute('transform', reflectionMatrix(angle));
+            reflectionAxis.setAttribute('transform', axisTransform);
+            axisArrowLeft.setAttribute('transform', axisTransform);
+            axisArrowRight.setAttribute('transform', axisTransform);
+            reflectionReadout.textContent = `${displayAngle}°`;
+
+            const isMatch = matchedAxis !== null;
+            reflectionCard.classList.toggle('matched', isMatch);
+            reflectionFeedback.classList.toggle('success', isMatch);
+
+            if (isMatch) {
+                foundReflectionAxes.add(matchedAxis);
+                reflectionFeedback.textContent = `Mirror match! This is a line of symmetry. (${displayAngle}°)`;
+            } else if (data.reflectionAxes.length === 0) {
+                reflectionFeedback.textContent = 'No mirror line makes this parallelogram match.';
+            } else {
+                reflectionFeedback.textContent = 'The reflected copy does not match yet.';
+            }
+            updateFoundCounts();
+        }
+
+        function handleReflection() {
+            const data = shapesData[currentShapeKey];
+            let displayAngle = Number(reflectionSlider.value);
+            let matchedAxis = null;
+
+            for (const axis of data.reflectionAxes) {
+                if (axisDistance(displayAngle, axis) <= 3) {
+                    matchedAxis = axis;
+                    displayAngle = axis === 0 && displayAngle > 90 ? 180 : axis;
+                    reflectionSlider.value = displayAngle;
+                    break;
+                }
+            }
+            updateReflectionVisuals(displayAngle, matchedAxis);
+        }
+
+        function updateRotationVisuals(angle, isMatch) {
+            const data = shapesData[currentShapeKey];
+            rotationFg.style.setProperty('--counter-angle', `${-angle}deg`);
+            rotationFg.style.transform = `rotate(${angle}deg)`;
+            rotationReadout.textContent = `${angle}°`;
+            rotationCard.classList.toggle('matched', isMatch);
+            rotationFeedback.classList.toggle('success', isMatch);
+
+            if (isMatch) {
+                foundRotations.add(angle);
+                if (angle === 360) {
+                    rotationFeedback.textContent = 'Full turn! Every letter is back at its starting vertex. (360°)';
+                } else {
+                    rotationFeedback.textContent = `Perfect match at ${angle}° — notice where each letter moved.`;
+                }
+            } else if (angle === 0) {
+                rotationFeedback.textContent = 'Rotate the shape to begin.';
+            } else {
+                rotationFeedback.textContent = 'The rotated copy does not match yet.';
+            }
+
+            if (foundRotations.size === data.rotations.length) {
+                rotationFeedback.textContent = `Excellent! You found all ${data.rotations.length} matching positions.`;
+            }
+            updateFoundCounts();
+        }
+
+        function handleRotation() {
+            const data = shapesData[currentShapeKey];
+            let angle = Number(rotationSlider.value);
+            let isMatch = false;
+
+            for (const rotation of data.rotations) {
+                if (Math.abs(angle - rotation) <= 4) {
+                    angle = rotation;
+                    rotationSlider.value = angle;
+                    isMatch = true;
+                    break;
+                }
+            }
+            if (angle <= 4) {
+                angle = 0;
+                rotationSlider.value = 0;
+            }
+            updateRotationVisuals(angle, isMatch);
+        }
+
+        function loadShape(key) {
+            currentShapeKey = key;
+            const data = shapesData[key];
+            foundReflectionAxes = new Set();
+            foundRotations = new Set();
+
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                const isActive = button.dataset.shape === key;
+                button.classList.toggle('active', isActive);
+                button.setAttribute('aria-pressed', String(isActive));
+            });
+
+            setCardColour(reflectionCard, data);
+            setCardColour(rotationCard, data);
+            tabsContainer.style.setProperty('--shape-color', data.color);
+            tabsContainer.style.setProperty('--shape-glow', data.glow);
+
+            reflectionOriginal.innerHTML = data.svgInner;
+            reflectionMoving.innerHTML = data.svgInner;
+            reflectionOriginal.style.color = data.color;
+            reflectionCopy.style.color = data.color;
+
+            const referenceLabels = createVertexLabels(data.vertices, 'vertex-reference-badge', data.referenceOffset ?? 14);
+            const movingLabels = createVertexLabels(data.vertices, 'vertex-marker', -(data.labelInset ?? 18));
+            rotationBg.innerHTML = data.svgInner;
+            rotationReference.innerHTML = referenceLabels;
+            rotationFg.innerHTML = data.svgInner + movingLabels;
+            rotationBg.style.color = data.color;
+            rotationReference.style.color = data.color;
+            rotationFg.style.color = data.color;
+
+            summary.innerHTML = `<strong>${data.name}</strong><span class="summary-divider">|</span>` +
+                `Lines of reflection: <strong>${data.reflectionAxes.length}</strong><span class="summary-divider">|</span>` +
+                `Order of rotational symmetry: <strong>${data.rotations.length}</strong>`;
+
+            reflectionSlider.value = 0;
+            const startsOnAxis = data.reflectionAxes.includes(0) ? 0 : null;
+            updateReflectionVisuals(0, startsOnAxis);
+            rotationSlider.value = 0;
+            updateRotationVisuals(0, false);
+        }
+
+        function init() {
+            Object.entries(shapesData).forEach(([key, data]) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'tab-btn';
+                button.dataset.shape = key;
+                button.textContent = data.name;
+                button.setAttribute('aria-pressed', 'false');
+                button.addEventListener('click', () => loadShape(key));
+                tabsContainer.appendChild(button);
+            });
+
+            reflectionSlider.addEventListener('input', handleReflection);
+            rotationSlider.addEventListener('input', handleRotation);
+            loadShape(currentShapeKey);
+        }
+
+        init();
+    </script>
+</body>
+</html>

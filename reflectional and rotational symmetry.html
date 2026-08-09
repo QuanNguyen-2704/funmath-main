@@ -74,7 +74,12 @@
 
         .tabs {
             display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
-            max-width: 900px; margin-bottom: 26px;
+            width: 100%; max-width: 1080px; margin-bottom: 26px;
+        }
+        .tabs-heading {
+            flex: 0 0 100%; margin: 8px 0 0; color: var(--muted); text-align: center;
+            font-family: 'Baloo 2', sans-serif; font-size: .88rem; font-weight: 800;
+            letter-spacing: .08em; text-transform: uppercase;
         }
         .tab-btn {
             padding: 8px 18px; border: 2px solid transparent; border-radius: 999px;
@@ -302,61 +307,171 @@
                     <div class="found-count" id="rotation-found">Found: 0 / 0 matching positions</div>
                 </div>
 
-                <div class="legend"><span class="legend-swatch"></span><span>Faint letters mark the start; solid letters move with the shape and stay upright.</span></div>
+                <div class="legend"><span class="legend-swatch"></span><span id="rotation-legend-text">Faint letters mark the start; solid letters move with the shape and stay upright.</span></div>
             </section>
         </div>
     </main>
 
     <script>
+        function makeRegularVertices(sides, radius = 90, angleOffsetDeg = -90) {
+            return Array.from({ length: sides }, (_, index) => {
+                const angle = (angleOffsetDeg + index * 360 / sides) * Math.PI / 180;
+                return [120 + radius * Math.cos(angle), 120 + radius * Math.sin(angle)];
+            });
+        }
+
+        function makeRadialOutline(steps, radiusAtAngle) {
+            return Array.from({ length: steps }, (_, index) => {
+                const angle = index * Math.PI * 2 / steps;
+                const radius = radiusAtAngle(angle);
+                return [120 + radius * Math.cos(angle), 120 + radius * Math.sin(angle)];
+            });
+        }
+
+        function pointsAttribute(points) {
+            return points.map(([x, y]) => `${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
+        }
+
+        function makeSkullOutline() {
+            const points = [];
+            for (let angle = 180; angle <= 360; angle += 10) {
+                const radians = angle * Math.PI / 180;
+                points.push([120 + 70 * Math.cos(radians), 95 + 70 * Math.sin(radians)]);
+            }
+            points.push([190,95], [175,150], [150,150], [150,205], [90,205], [90,150], [65,150], [50,95]);
+            return points;
+        }
+
+        const equilateralVertices = [[120,30], [197.94,165], [42.06,165]];
+        const pentagonVertices = makeRegularVertices(5);
+        const hexagonVertices = makeRegularVertices(6);
+        const octagonVertices = makeRegularVertices(8);
+        const circleOutline = makeRegularVertices(120);
+        const cloverOutline = makeRadialOutline(180, angle => 65 + 25 * Math.cos(3 * (angle + Math.PI / 2)));
+        const wheelOutline = makeRadialOutline(192, angle => 74 + 19 * Math.pow(Math.cos(4 * angle), 6));
+        const swordOutline = makeRadialOutline(180, angle => 76 + 12 * Math.sin(2 * angle) + 7 * Math.cos(4 * angle + .55));
+
         const shapesData = {
-            triangle: {
-                name: 'Triangle', color: 'var(--coral)', glow: 'rgba(255,107,107,.45)',
-                reflectionAxes: [30, 90, 150], rotations: [120, 240, 360],
-                vertices: [[120,30], [197.94,165], [42.06,165]],
-                svgInner: '<polygon points="120,30 197.94,165 42.06,165" fill="currentColor"/>'
-            },
             square: {
-                name: 'Square', color: 'var(--teal)', glow: 'rgba(78,205,196,.45)',
+                name: 'Square', group: 'mathematical', color: 'var(--teal)', glow: 'rgba(78,205,196,.45)',
                 reflectionAxes: [0, 45, 90, 135], rotations: [90, 180, 270, 360],
                 vertices: [[50,50], [190,50], [190,190], [50,190]],
+                reflectionPoints: [[50,50], [190,50], [190,190], [50,190]],
                 svgInner: '<rect x="50" y="50" width="140" height="140" fill="currentColor"/>'
             },
             rectangle: {
-                name: 'Rectangle', color: 'var(--purple)', glow: 'rgba(167,139,250,.45)',
+                name: 'Rectangle', group: 'mathematical', color: 'var(--purple)', glow: 'rgba(167,139,250,.45)',
                 reflectionAxes: [0, 90], rotations: [180, 360],
                 vertices: [[30,70], [210,70], [210,170], [30,170]],
+                reflectionPoints: [[30,70], [210,70], [210,170], [30,170]],
                 svgInner: '<rect x="30" y="70" width="180" height="100" fill="currentColor"/>'
             },
+            isoTriangle: {
+                name: 'Isosceles Triangle', group: 'mathematical', color: 'var(--coral)', glow: 'rgba(255,107,107,.45)',
+                reflectionAxes: [90], rotations: [360],
+                vertices: [[120,25], [205,190], [35,190]],
+                reflectionPoints: [[120,25], [205,190], [35,190]],
+                svgInner: '<polygon points="120,25 205,190 35,190" fill="currentColor"/>'
+            },
+            equiTriangle: {
+                name: 'Equilateral Triangle', group: 'mathematical', color: 'var(--coral-deep)', glow: 'rgba(225,78,86,.45)',
+                reflectionAxes: [30, 90, 150], rotations: [120, 240, 360],
+                vertices: equilateralVertices, reflectionPoints: equilateralVertices,
+                svgInner: `<polygon points="${pointsAttribute(equilateralVertices)}" fill="currentColor"/>`
+            },
             pentagon: {
-                name: 'Pentagon', color: 'var(--yellow-deep)', glow: 'rgba(229,195,54,.45)',
+                name: 'Pentagon', group: 'mathematical', color: 'var(--yellow-deep)', glow: 'rgba(229,195,54,.45)',
                 reflectionAxes: [18, 54, 90, 126, 162], rotations: [72, 144, 216, 288, 360],
-                vertices: [[120,30], [205.59,92.19], [172.9,192.8], [67.1,192.8], [34.41,92.19]],
-                svgInner: '<polygon points="120,30 205.59,92.19 172.9,192.8 67.1,192.8 34.41,92.19" fill="currentColor"/>'
+                vertices: pentagonVertices, reflectionPoints: pentagonVertices,
+                svgInner: `<polygon points="${pointsAttribute(pentagonVertices)}" fill="currentColor"/>`
             },
             hexagon: {
-                name: 'Hexagon', color: 'var(--green)', glow: 'rgba(107,203,119,.45)',
+                name: 'Hexagon', group: 'mathematical', color: 'var(--green)', glow: 'rgba(107,203,119,.45)',
                 reflectionAxes: [0, 30, 60, 90, 120, 150], rotations: [60, 120, 180, 240, 300, 360],
-                vertices: [[120,30], [197.94,75], [197.94,165], [120,210], [42.06,165], [42.06,75]],
-                svgInner: '<polygon points="120,30 197.94,75 197.94,165 120,210 42.06,165 42.06,75" fill="currentColor"/>'
+                vertices: hexagonVertices, reflectionPoints: hexagonVertices,
+                svgInner: `<polygon points="${pointsAttribute(hexagonVertices)}" fill="currentColor"/>`
+            },
+            octagon: {
+                name: 'Octagon', group: 'mathematical', color: 'var(--teal-deep)', glow: 'rgba(47,167,158,.45)',
+                reflectionAxes: [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5], rotations: [45, 90, 135, 180, 225, 270, 315, 360],
+                vertices: octagonVertices, reflectionPoints: octagonVertices,
+                svgInner: `<polygon points="${pointsAttribute(octagonVertices)}" fill="currentColor"/>`
+            },
+            rhombus: {
+                name: 'Rhombus', group: 'mathematical', color: 'var(--purple-deep)', glow: 'rgba(124,92,224,.45)',
+                reflectionAxes: [0, 90], rotations: [180, 360],
+                vertices: [[120,25], [195,120], [120,215], [45,120]],
+                reflectionPoints: [[120,25], [195,120], [120,215], [45,120]],
+                svgInner: '<polygon points="120,25 195,120 120,215 45,120" fill="currentColor"/>'
+            },
+            isoTrapezoid: {
+                name: 'Isosceles Trapezoid', group: 'mathematical', color: 'var(--yellow-deep)', glow: 'rgba(229,195,54,.45)',
+                reflectionAxes: [90], rotations: [360],
+                vertices: [[75,60], [165,60], [205,180], [35,180]],
+                reflectionPoints: [[75,60], [165,60], [205,180], [35,180]],
+                svgInner: '<polygon points="75,60 165,60 205,180 35,180" fill="currentColor"/>'
+            },
+            trapezoid: {
+                name: 'Normal Trapezoid', group: 'mathematical', color: 'var(--green)', glow: 'rgba(107,203,119,.45)',
+                reflectionAxes: [], rotations: [360],
+                vertices: [[45,60], [140,60], [205,180], [15,180]],
+                reflectionPoints: [[45,60], [140,60], [205,180], [15,180]],
+                svgInner: '<polygon points="45,60 140,60 205,180 15,180" fill="currentColor"/>'
+            },
+            parallelogram: {
+                name: 'Parallelogram', group: 'mathematical', color: 'var(--teal-deep)', glow: 'rgba(47,167,158,.45)',
+                reflectionAxes: [], rotations: [180, 360],
+                vertices: [[60,80], [200,80], [180,160], [40,160]],
+                reflectionPoints: [[60,80], [200,80], [180,160], [40,160]],
+                svgInner: '<polygon points="60,80 200,80 180,160 40,160" fill="currentColor"/>'
+            },
+            kite: {
+                name: 'Kite', group: 'mathematical', color: 'var(--purple)', glow: 'rgba(167,139,250,.45)',
+                reflectionAxes: [90], rotations: [360],
+                vertices: [[120,20], [190,90], [120,220], [50,90]],
+                reflectionPoints: [[120,20], [190,90], [120,220], [50,90]],
+                svgInner: '<polygon points="120,20 190,90 120,220 50,90" fill="currentColor"/>'
+            },
+            circle: {
+                name: 'Circle', group: 'mathematical', color: 'var(--coral)', glow: 'rgba(255,107,107,.45)',
+                reflectionAxes: [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5], reflectionInfinite: true,
+                rotations: [], rotationInfinite: true, reflectionPoints: circleOutline,
+                svgInner: '<circle cx="120" cy="120" r="90" fill="currentColor"/>'
             },
             star: {
-                name: 'Star', color: 'var(--coral-deep)', glow: 'rgba(225,78,86,.45)',
+                name: 'Star', group: 'adventure', color: 'var(--coral-deep)', glow: 'rgba(225,78,86,.45)',
                 reflectionAxes: [18, 54, 90, 126, 162], rotations: [72, 144, 216, 288, 360],
                 labelInset: 10, referenceOffset: 10,
                 vertices: [[120,30], [141.16,90.88], [205.59,92.19], [154.24,131.12], [172.9,192.8], [120,156], [67.1,192.8], [85.76,131.12], [34.41,92.19], [98.84,90.88]],
+                reflectionPoints: [[120,30], [141.16,90.88], [205.59,92.19], [154.24,131.12], [172.9,192.8], [120,156], [67.1,192.8], [85.76,131.12], [34.41,92.19], [98.84,90.88]],
                 svgInner: '<polygon points="120,30 141.16,90.88 205.59,92.19 154.24,131.12 172.9,192.8 120,156 67.1,192.8 85.76,131.12 34.41,92.19 98.84,90.88" fill="currentColor"/>'
             },
-            parallelogram: {
-                name: 'Parallelogram', color: 'var(--teal-deep)', glow: 'rgba(47,167,158,.45)',
-                reflectionAxes: [], rotations: [180, 360],
-                vertices: [[60,80], [200,80], [180,160], [40,160]],
-                svgInner: '<polygon points="60,80 200,80 180,160 40,160" fill="currentColor"/>'
+            compass: {
+                name: '🧭 Compass', group: 'adventure', color: 'var(--coral)', glow: 'rgba(255,107,107,.45)',
+                reflectionAxes: [0, 45, 90, 135], rotations: [90, 180, 270, 360],
+                reflectionPoints: [[120,10], [135,105], [230,120], [135,135], [120,230], [105,135], [10,120], [105,105]],
+                svgInner: '<circle cx="120" cy="120" r="75" fill="none" stroke="currentColor" stroke-width="12"/><circle cx="120" cy="120" r="60" fill="none" stroke="currentColor" stroke-width="4" opacity=".3"/><g fill="currentColor"><polygon points="120,50 130,110 190,120 130,130 120,190 110,130 50,120 110,110" opacity=".6"/><polygon points="120,10 135,105 230,120 135,135 120,230 105,135 10,120 105,105"/><circle cx="120" cy="120" r="22" fill="#fff"/><circle cx="120" cy="120" r="12"/></g>'
             },
-            rhombus: {
-                name: 'Rhombus', color: 'var(--purple-deep)', glow: 'rgba(124,92,224,.45)',
-                reflectionAxes: [0, 90], rotations: [180, 360],
-                vertices: [[120,30], [190,120], [120,210], [50,120]],
-                svgInner: '<polygon points="120,30 190,120 120,210 50,120" fill="currentColor"/>'
+            clover: {
+                name: '☘️ 3-Leaf Clover', group: 'adventure', color: 'var(--green)', glow: 'rgba(107,203,119,.45)',
+                reflectionAxes: [30, 90, 150], rotations: [120, 240, 360], reflectionPoints: cloverOutline,
+                svgInner: '<g fill="currentColor"><circle cx="120" cy="75" r="45"/><circle cx="159" cy="142.5" r="45"/><circle cx="81" cy="142.5" r="45"/><circle cx="120" cy="120" r="25"/></g>'
+            },
+            skull: {
+                name: '☠️ Saber Skull', group: 'adventure', color: 'var(--muted)', glow: 'rgba(102,112,133,.45)',
+                reflectionAxes: [90], rotations: [360], reflectionPoints: makeSkullOutline(),
+                svgInner: '<line x1="30" y1="50" x2="210" y2="190" stroke="currentColor" stroke-width="20" stroke-linecap="round" opacity=".4"/><line x1="210" y1="50" x2="30" y2="190" stroke="currentColor" stroke-width="20" stroke-linecap="round" opacity=".4"/><path d="M60 70C60 10 180 10 180 70C180 130 165 140 160 150L150 200L125 150H115L90 200L80 150C75 140 60 130 60 70Z" fill="currentColor"/><circle cx="95" cy="85" r="18" fill="#fff"/><circle cx="145" cy="85" r="18" fill="#fff"/><path d="M115 125H125L120 110Z" fill="#fff"/>'
+            },
+            swords: {
+                name: '⚔️ Sword Plaque', group: 'adventure', color: 'var(--purple)', glow: 'rgba(167,139,250,.45)',
+                reflectionAxes: [], rotations: [180, 360], reflectionPoints: swordOutline,
+                svgInner: '<rect x="20" y="60" width="200" height="120" rx="6" fill="currentColor" opacity=".4"/><path d="M30 70H210V170H30Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M50 140C80 155 140 155 170 110V125C140 175 70 165 50 140Z" fill="currentColor"/><circle cx="40" cy="140" r="12"/><path d="M190 100C160 85 100 85 70 130V115C100 65 170 75 190 100Z" fill="currentColor"/><circle cx="200" cy="100" r="12"/>'
+            },
+            wheel: {
+                name: '⚓ Ship Wheel', group: 'adventure', color: 'var(--green-deep)', glow: 'rgba(72,168,87,.45)',
+                reflectionAxes: [0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5], rotations: [45, 90, 135, 180, 225, 270, 315, 360],
+                reflectionPoints: wheelOutline,
+                svgInner: '<g stroke="currentColor" stroke-linecap="round"><line x1="120" y1="10" x2="120" y2="230" stroke-width="12"/><line x1="10" y1="120" x2="230" y2="120" stroke-width="12"/><line x1="42.2" y1="42.2" x2="197.8" y2="197.8" stroke-width="12"/><line x1="42.2" y1="197.8" x2="197.8" y2="42.2" stroke-width="12"/><circle cx="120" cy="120" r="80" fill="none" stroke-width="16"/><circle cx="120" cy="120" r="60" fill="none" stroke="#fff" stroke-width="4" opacity=".4"/><circle cx="120" cy="120" r="28" fill="currentColor" stroke="none"/><circle cx="120" cy="120" r="12" fill="#fff" stroke="none"/></g>'
             }
         };
 
@@ -377,6 +492,7 @@
         const rotationReadout = document.getElementById('rotation-readout');
         const rotationFeedback = document.getElementById('rotation-feedback');
         const rotationFound = document.getElementById('rotation-found');
+        const rotationLegendText = document.getElementById('rotation-legend-text');
 
         let currentShapeKey = 'square';
         let foundReflectionAxes = new Set();
@@ -410,8 +526,12 @@
 
         function updateFoundCounts() {
             const data = shapesData[currentShapeKey];
-            reflectionFound.textContent = `Found: ${foundReflectionAxes.size} / ${data.reflectionAxes.length} mirror lines`;
-            rotationFound.textContent = `Found: ${foundRotations.size} / ${data.rotations.length} matching positions`;
+            reflectionFound.textContent = data.reflectionInfinite
+                ? 'Infinitely many — every line through the centre'
+                : `Found: ${foundReflectionAxes.size} / ${data.reflectionAxes.length} mirror lines`;
+            rotationFound.textContent = data.rotationInfinite
+                ? 'Infinite order — every angle matches'
+                : `Found: ${foundRotations.size} / ${data.rotations.length} matching positions`;
         }
 
         function axisDistance(angle, axis) {
@@ -445,6 +565,10 @@
             const centreDistance = Math.abs(dy * 120 - dx * 120 + reflectionAxis.x2 * reflectionAxis.y1 - reflectionAxis.y2 * reflectionAxis.x1) / length;
             let angle = Math.atan2(dy, dx) * 180 / Math.PI;
             angle = (angle + 180) % 180;
+
+            if (data.reflectionInfinite && centreDistance <= 3) {
+                return Math.round(angle * 10) / 10;
+            }
 
             for (const axis of data.reflectionAxes) {
                 if (centreDistance <= 3 && axisDistance(angle, axis) <= 2.5) return axis;
@@ -548,6 +672,98 @@
             reflectionCtx.setLineDash([]);
         }
 
+        function drawReflectionArtwork(data, fill, stroke, opacity = 1) {
+            reflectionCtx.save();
+            reflectionCtx.globalAlpha = opacity;
+            reflectionCtx.lineJoin = 'round';
+            reflectionCtx.lineCap = 'round';
+
+            if (currentShapeKey === 'compass') {
+                reflectionCtx.strokeStyle = stroke;
+                reflectionCtx.lineWidth = 12;
+                reflectionCtx.beginPath(); reflectionCtx.arc(120, 120, 75, 0, Math.PI * 2); reflectionCtx.stroke();
+                reflectionCtx.globalAlpha = opacity * .35;
+                reflectionCtx.lineWidth = 4;
+                reflectionCtx.beginPath(); reflectionCtx.arc(120, 120, 60, 0, Math.PI * 2); reflectionCtx.stroke();
+                reflectionCtx.globalAlpha = opacity;
+                drawPolygon([[120,50],[130,110],[190,120],[130,130],[120,190],[110,130],[50,120],[110,110]], fill, stroke, [], 2);
+                drawPolygon(data.reflectionPoints, fill, stroke, [], 2);
+                reflectionCtx.fillStyle = '#fff';
+                reflectionCtx.beginPath(); reflectionCtx.arc(120, 120, 22, 0, Math.PI * 2); reflectionCtx.fill();
+                reflectionCtx.fillStyle = fill;
+                reflectionCtx.beginPath(); reflectionCtx.arc(120, 120, 12, 0, Math.PI * 2); reflectionCtx.fill();
+            } else if (currentShapeKey === 'clover') {
+                reflectionCtx.fillStyle = fill; reflectionCtx.strokeStyle = stroke; reflectionCtx.lineWidth = 3;
+                [[120,75],[159,142.5],[81,142.5],[120,120]].forEach(([x, y], index) => {
+                    reflectionCtx.beginPath(); reflectionCtx.arc(x, y, index === 3 ? 25 : 45, 0, Math.PI * 2);
+                    reflectionCtx.fill(); reflectionCtx.stroke();
+                });
+            } else if (currentShapeKey === 'skull') {
+                reflectionCtx.strokeStyle = stroke; reflectionCtx.lineWidth = 20; reflectionCtx.globalAlpha = opacity * .4;
+                reflectionCtx.beginPath(); reflectionCtx.moveTo(30,50); reflectionCtx.lineTo(210,190); reflectionCtx.stroke();
+                reflectionCtx.beginPath(); reflectionCtx.moveTo(210,50); reflectionCtx.lineTo(30,190); reflectionCtx.stroke();
+                reflectionCtx.globalAlpha = opacity; reflectionCtx.fillStyle = fill; reflectionCtx.strokeStyle = stroke; reflectionCtx.lineWidth = 3;
+                reflectionCtx.beginPath();
+                reflectionCtx.moveTo(60,70); reflectionCtx.bezierCurveTo(60,10,180,10,180,70);
+                reflectionCtx.bezierCurveTo(180,130,165,140,160,150);
+                reflectionCtx.lineTo(150,200); reflectionCtx.lineTo(125,150); reflectionCtx.lineTo(115,150);
+                reflectionCtx.lineTo(90,200); reflectionCtx.lineTo(80,150);
+                reflectionCtx.bezierCurveTo(75,140,60,130,60,70); reflectionCtx.closePath(); reflectionCtx.fill(); reflectionCtx.stroke();
+                reflectionCtx.fillStyle = '#fff';
+                [[95,85],[145,85]].forEach(([x,y]) => { reflectionCtx.beginPath(); reflectionCtx.arc(x,y,18,0,Math.PI*2); reflectionCtx.fill(); });
+                reflectionCtx.beginPath(); reflectionCtx.moveTo(115,125); reflectionCtx.lineTo(125,125); reflectionCtx.lineTo(120,110); reflectionCtx.closePath(); reflectionCtx.fill();
+            } else if (currentShapeKey === 'swords') {
+                reflectionCtx.fillStyle = fill; reflectionCtx.strokeStyle = stroke; reflectionCtx.lineWidth = 2;
+                reflectionCtx.globalAlpha = opacity * .4; reflectionCtx.beginPath(); reflectionCtx.rect(20,60,200,120); reflectionCtx.fill();
+                reflectionCtx.globalAlpha = opacity; reflectionCtx.beginPath(); reflectionCtx.rect(30,70,180,100); reflectionCtx.stroke();
+                reflectionCtx.beginPath(); reflectionCtx.moveTo(50,140); reflectionCtx.bezierCurveTo(80,155,140,155,170,110);
+                reflectionCtx.lineTo(170,125); reflectionCtx.bezierCurveTo(140,175,70,165,50,140); reflectionCtx.closePath(); reflectionCtx.fill();
+                reflectionCtx.beginPath(); reflectionCtx.arc(40,140,12,0,Math.PI*2); reflectionCtx.fill();
+                reflectionCtx.beginPath(); reflectionCtx.moveTo(190,100); reflectionCtx.bezierCurveTo(160,85,100,85,70,130);
+                reflectionCtx.lineTo(70,115); reflectionCtx.bezierCurveTo(100,65,170,75,190,100); reflectionCtx.closePath(); reflectionCtx.fill();
+                reflectionCtx.beginPath(); reflectionCtx.arc(200,100,12,0,Math.PI*2); reflectionCtx.fill();
+            } else if (currentShapeKey === 'wheel') {
+                reflectionCtx.strokeStyle = stroke; reflectionCtx.lineWidth = 12;
+                [[120,10,120,230],[10,120,230,120],[42.2,42.2,197.8,197.8],[42.2,197.8,197.8,42.2]].forEach(line => {
+                    reflectionCtx.beginPath(); reflectionCtx.moveTo(line[0],line[1]); reflectionCtx.lineTo(line[2],line[3]); reflectionCtx.stroke();
+                });
+                reflectionCtx.lineWidth = 16; reflectionCtx.beginPath(); reflectionCtx.arc(120,120,80,0,Math.PI*2); reflectionCtx.stroke();
+                reflectionCtx.globalAlpha = opacity * .4; reflectionCtx.strokeStyle = '#fff'; reflectionCtx.lineWidth = 4;
+                reflectionCtx.beginPath(); reflectionCtx.arc(120,120,60,0,Math.PI*2); reflectionCtx.stroke();
+                reflectionCtx.globalAlpha = opacity; reflectionCtx.fillStyle = fill;
+                reflectionCtx.beginPath(); reflectionCtx.arc(120,120,28,0,Math.PI*2); reflectionCtx.fill();
+                reflectionCtx.fillStyle = '#fff'; reflectionCtx.beginPath(); reflectionCtx.arc(120,120,12,0,Math.PI*2); reflectionCtx.fill();
+            } else {
+                drawPolygon(data.reflectionPoints, fill, stroke, [], 3);
+            }
+            reflectionCtx.restore();
+        }
+
+        function clipToPolygon(points) {
+            reflectionCtx.beginPath();
+            reflectionCtx.moveTo(points[0].x, points[0].y);
+            points.slice(1).forEach(point => reflectionCtx.lineTo(point.x, point.y));
+            reflectionCtx.closePath();
+            reflectionCtx.clip();
+        }
+
+        function applyFoldTransform(axis, angle) {
+            const radians = angle * Math.PI / 180;
+            const dx = axis.x2 - axis.x1;
+            const dy = axis.y2 - axis.y1;
+            const length = Math.hypot(dx, dy);
+            if (!length) return;
+            const ux = dx / length;
+            const uy = dy / length;
+            const cosine = Math.cos(radians);
+            const a = ux * ux + cosine * uy * uy;
+            const cross = (1 - cosine) * ux * uy;
+            const d = uy * uy + cosine * ux * ux;
+            const e = axis.x1 - a * axis.x1 - cross * axis.y1;
+            const f = axis.y1 - cross * axis.x1 - d * axis.y1;
+            reflectionCtx.transform(a, cross, cross, d, e, f);
+        }
+
         function drawReflectionGuides() {
             shapesData[currentShapeKey].reflectionAxes.forEach(angle => {
                 const guide = makeReflectionGuide(angle);
@@ -590,13 +806,21 @@
         function drawReflection() {
             reflectionCtx.clearRect(0, 0, reflectionCanvas.width, reflectionCanvas.height);
             drawReflectionGuides();
-            drawPolygon(reflectionPoints, 'rgba(200,210,220,.2)', 'rgba(150,160,170,.42)', [5, 5], 1.5);
+            const data = shapesData[currentShapeKey];
+            drawReflectionArtwork(data, '#D7DEE7', '#9AA7B6', .32);
 
-            const parts = splitShape(reflectionPoints, reflectionAxis);
-            drawPolygon(parts.fixed, 'rgba(78,205,196,.68)', '#2FA79E');
-            const folded = parts.fold.map(point => foldPoint(point, reflectionAxis, foldAngleDeg));
-            const opacity = .5 + foldAngleDeg / 180 * .45;
-            drawPolygon(folded, `rgba(255,107,107,${opacity})`, '#E14E56');
+            const canvasCorners = [{x:0,y:0},{x:240,y:0},{x:240,y:240},{x:0,y:240}];
+            const parts = splitShape(canvasCorners, reflectionAxis);
+            reflectionCtx.save();
+            clipToPolygon(parts.fixed);
+            drawReflectionArtwork(data, '#4ECDC4', '#2FA79E', .82);
+            reflectionCtx.restore();
+
+            reflectionCtx.save();
+            applyFoldTransform(reflectionAxis, foldAngleDeg);
+            clipToPolygon(parts.fold);
+            drawReflectionArtwork(data, '#FF6B6B', '#E14E56', .55 + foldAngleDeg / 180 * .4);
+            reflectionCtx.restore();
             drawReflectionAxis();
         }
 
@@ -612,9 +836,11 @@
 
             if (isMatch) {
                 foundReflectionAxes.add(matchedAxis);
-                reflectionFeedback.textContent = 'The halves match! This is a line of symmetry.';
+                reflectionFeedback.textContent = data.reflectionInfinite
+                    ? 'The halves match! Every line through the centre is a line of symmetry.'
+                    : 'The halves match! This is a line of symmetry.';
             } else if (isFullyFolded && data.reflectionAxes.length === 0) {
-                reflectionFeedback.textContent = 'The halves do not match: this parallelogram has no line of symmetry.';
+                reflectionFeedback.textContent = `The halves do not match: ${data.name} has no line of symmetry.`;
             } else if (isFullyFolded) {
                 reflectionFeedback.textContent = 'The halves do not match. Move the mirror line and try again.';
             } else if (foldAngleDeg > 0) {
@@ -712,7 +938,11 @@
 
             if (isMatch) {
                 foundRotations.add(angle);
-                if (angle === 360) {
+                if (data.rotationInfinite) {
+                    rotationFeedback.textContent = angle === 360
+                        ? 'Full turn! A circle matches at 360° and at every angle in between.'
+                        : `Perfect match at ${angle}° — a circle matches after any rotation.`;
+                } else if (angle === 360) {
                     rotationFeedback.textContent = 'Full turn! Every letter is back at its starting vertex. (360°)';
                 } else {
                     rotationFeedback.textContent = `Perfect match at ${angle}° — notice where each letter moved.`;
@@ -723,7 +953,7 @@
                 rotationFeedback.textContent = 'The rotated copy does not match yet.';
             }
 
-            if (foundRotations.size === data.rotations.length) {
+            if (!data.rotationInfinite && foundRotations.size === data.rotations.length) {
                 rotationFeedback.textContent = `Excellent! You found all ${data.rotations.length} matching positions.`;
             }
             updateFoundCounts();
@@ -732,14 +962,16 @@
         function handleRotation() {
             const data = shapesData[currentShapeKey];
             let angle = Number(rotationSlider.value);
-            let isMatch = false;
+            let isMatch = Boolean(data.rotationInfinite && angle > 0);
 
-            for (const rotation of data.rotations) {
-                if (Math.abs(angle - rotation) <= 4) {
-                    angle = rotation;
-                    rotationSlider.value = angle;
-                    isMatch = true;
-                    break;
+            if (!data.rotationInfinite) {
+                for (const rotation of data.rotations) {
+                    if (Math.abs(angle - rotation) <= 4) {
+                        angle = rotation;
+                        rotationSlider.value = angle;
+                        isMatch = true;
+                        break;
+                    }
                 }
             }
             if (angle <= 4) {
@@ -766,10 +998,11 @@
             tabsContainer.style.setProperty('--shape-color', data.color);
             tabsContainer.style.setProperty('--shape-glow', data.glow);
 
-            reflectionPoints = data.vertices.map(([x, y]) => ({ x, y }));
+            reflectionPoints = data.reflectionPoints.map(([x, y]) => ({ x, y }));
 
-            const referenceLabels = createVertexLabels(data.vertices, 'vertex-reference-badge', data.referenceOffset ?? 14);
-            const movingLabels = createVertexLabels(data.vertices, 'vertex-marker', -(data.labelInset ?? 18));
+            const labelVertices = data.vertices ?? [];
+            const referenceLabels = createVertexLabels(labelVertices, 'vertex-reference-badge', data.referenceOffset ?? 14);
+            const movingLabels = createVertexLabels(labelVertices, 'vertex-marker', -(data.labelInset ?? 18));
             rotationBg.innerHTML = data.svgInner;
             rotationReference.innerHTML = referenceLabels;
             rotationFg.innerHTML = data.svgInner + movingLabels;
@@ -777,9 +1010,14 @@
             rotationReference.style.color = data.color;
             rotationFg.style.color = data.color;
 
+            const reflectionOrder = data.reflectionInfinite ? 'Infinite' : data.reflectionAxes.length;
+            const rotationOrder = data.rotationInfinite ? 'Infinite' : data.rotations.length;
             summary.innerHTML = `<strong>${data.name}</strong><span class="summary-divider">|</span>` +
-                `Lines of reflection: <strong>${data.reflectionAxes.length}</strong><span class="summary-divider">|</span>` +
-                `Order of rotational symmetry: <strong>${data.rotations.length}</strong>`;
+                `Lines of reflection: <strong>${reflectionOrder}</strong><span class="summary-divider">|</span>` +
+                `Order of rotational symmetry: <strong>${rotationOrder}</strong>`;
+            rotationLegendText.textContent = labelVertices.length
+                ? 'Faint letters mark the start; solid letters move with the shape and stay upright.'
+                : 'Rotate the complete design and compare it with the faint starting position.';
 
             setReflectionAxis(90);
             reflectionSlider.value = 0;
@@ -790,15 +1028,22 @@
         }
 
         function init() {
-            Object.entries(shapesData).forEach(([key, data]) => {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'tab-btn';
-                button.dataset.shape = key;
-                button.textContent = data.name;
-                button.setAttribute('aria-pressed', 'false');
-                button.addEventListener('click', () => loadShape(key));
-                tabsContainer.appendChild(button);
+            [['mathematical', 'Mathematical shapes'], ['adventure', 'Adventure shapes']].forEach(([group, label]) => {
+                const heading = document.createElement('div');
+                heading.className = 'tabs-heading';
+                heading.textContent = label;
+                tabsContainer.appendChild(heading);
+
+                Object.entries(shapesData).filter(([, data]) => data.group === group).forEach(([key, data]) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'tab-btn';
+                    button.dataset.shape = key;
+                    button.textContent = data.name;
+                    button.setAttribute('aria-pressed', 'false');
+                    button.addEventListener('click', () => loadShape(key));
+                    tabsContainer.appendChild(button);
+                });
             });
 
             reflectionSlider.addEventListener('input', handleReflection);

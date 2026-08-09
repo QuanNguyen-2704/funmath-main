@@ -92,7 +92,38 @@
 
         .shape-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         #shape-bg { filter: blur(2px) drop-shadow(0 2px 4px rgba(0,0,0,0.25)); opacity: 0.55; transition: opacity 0.3s ease, filter 0.3s ease; }
+        #vertex-reference { overflow: visible; }
         #shape-fg { transform-origin: center center; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15)); transition: filter 0.3s ease; }
+
+        .vertex-reference-badge circle {
+            fill: rgba(255,255,255,0.92); stroke: currentColor; stroke-width: 2;
+            stroke-dasharray: 3 2; opacity: 0.72; vector-effect: non-scaling-stroke;
+        }
+        .vertex-reference-badge text, .vertex-marker text {
+            font-family: 'Baloo 2', sans-serif; font-size: 13px; font-weight: 800;
+            text-anchor: middle; dominant-baseline: central; pointer-events: none;
+        }
+        .vertex-reference-badge text { fill: var(--muted); opacity: 0.85; }
+        .vertex-marker-content {
+            transform-box: fill-box; transform-origin: center;
+            transform: rotate(var(--counter-rotation-angle, 0deg));
+        }
+        .vertex-marker-content circle {
+            fill: white; stroke: currentColor; stroke-width: 3;
+            vector-effect: non-scaling-stroke;
+        }
+        .vertex-marker text { fill: var(--ink); }
+        .vertex-key {
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            max-width: 520px; margin: -18px 0 28px; color: var(--muted);
+            font-size: 0.95rem; font-weight: 600; text-align: center;
+        }
+        .vertex-key-badge {
+            flex: 0 0 auto; width: 26px; height: 26px; border: 3px solid var(--teal);
+            border-radius: 50%; display: grid; place-items: center; background: white;
+            color: var(--ink); font-family: 'Baloo 2', sans-serif; font-weight: 800;
+        }
+        .vertex-key[hidden] { display: none; }
 
         .matched #shape-bg { opacity: 0.8; filter: blur(10px); }
         .matched #shape-fg { filter: drop-shadow(0 0 25px var(--match-color, var(--yellow))); }
@@ -142,7 +173,7 @@
     <main>
         <div class="instructions">
             <h2>Spin to Win!</h2>
-            <p>Slide to rotate the clear shape. Can you find the exact angles where it perfectly overlaps its shadow?</p>
+            <p>Slide to rotate the clear shape. Follow each labelled vertex as it moves, and find the angles where the shape perfectly overlaps its shadow.</p>
         </div>
 
         <div class="tabs" id="shape-tabs"></div>
@@ -150,7 +181,13 @@
         <div class="workspace" id="workspace">
             <div class="canvas-container" id="canvas-container">
                 <svg id="shape-bg" class="shape-layer" viewBox="0 0 240 240"></svg>
+                <svg id="vertex-reference" class="shape-layer" viewBox="0 0 240 240" aria-hidden="true"></svg>
                 <svg id="shape-fg" class="shape-layer" viewBox="0 0 240 240"></svg>
+            </div>
+
+            <div class="vertex-key" id="vertex-key">
+                <span class="vertex-key-badge">A</span>
+                <span>Faint outlined letters mark the starting positions; solid letters rotate with the shape.</span>
             </div>
 
             <div class="controls">
@@ -166,14 +203,14 @@
 
     <script>
         const shapesData = {
-            triangle: { name: "Triangle", group: "standard", color: "var(--coral)", matchColor: "rgba(255, 107, 107, 0.6)", symmetries: [120, 240, 360], svgInner: `<polygon points="120,30 197.94,165 42.06,165" fill="currentColor"/>` },
-            square: { name: "Square", group: "standard", color: "var(--teal)", matchColor: "rgba(78, 205, 196, 0.6)", symmetries: [90, 180, 270, 360], svgInner: `<rect x="50" y="50" width="140" height="140" rx="12" fill="currentColor"/>` },
-            rectangle: { name: "Rectangle", group: "standard", color: "var(--purple)", matchColor: "rgba(167, 139, 250, 0.6)", symmetries: [180, 360], svgInner: `<rect x="30" y="70" width="180" height="100" rx="12" fill="currentColor"/>` },
-            pentagon: { name: "Pentagon", group: "standard", color: "var(--yellow-deep)", matchColor: "rgba(229, 195, 54, 0.6)", symmetries: [72, 144, 216, 288, 360], svgInner: `<polygon points="120,30 205.59,92.19 172.9,192.8 67.1,192.8 34.41,92.19" fill="currentColor"/>` },
-            hexagon: { name: "Hexagon", group: "standard", color: "var(--green)", matchColor: "rgba(107, 203, 119, 0.6)", symmetries: [60, 120, 180, 240, 300, 360], svgInner: `<polygon points="120,30 197.94,75 197.94,165 120,210 42.06,165 42.06,75" fill="currentColor"/>` },
-            star: { name: "Star", group: "standard", color: "var(--coral-deep)", matchColor: "rgba(225, 78, 86, 0.6)", symmetries: [72, 144, 216, 288, 360], svgInner: `<polygon points="120,30 141.16,90.88 205.59,92.19 154.24,131.12 172.9,192.8 120,156 67.1,192.8 85.76,131.12 34.41,92.19 98.84,90.88" fill="currentColor"/>` },
-            parallelogram: { name: "Parallelogram", group: "standard", color: "var(--teal-deep)", matchColor: "rgba(47, 167, 158, 0.6)", symmetries: [180, 360], svgInner: `<polygon points="60,80 200,80 180,160 40,160" fill="currentColor"/>` },
-            rhombus: { name: "Rhombus", group: "standard", color: "var(--purple-deep)", matchColor: "rgba(124, 92, 224, 0.6)", symmetries: [180, 360], svgInner: `<polygon points="120,30 190,120 120,210 50,120" fill="currentColor"/>` },
+            triangle: { name: "Triangle", group: "standard", color: "var(--coral)", matchColor: "rgba(255, 107, 107, 0.6)", symmetries: [120, 240, 360], vertices: [[120,30], [197.94,165], [42.06,165]], svgInner: `<polygon points="120,30 197.94,165 42.06,165" fill="currentColor"/>` },
+            square: { name: "Square", group: "standard", color: "var(--teal)", matchColor: "rgba(78, 205, 196, 0.6)", symmetries: [90, 180, 270, 360], vertices: [[50,50], [190,50], [190,190], [50,190]], svgInner: `<rect x="50" y="50" width="140" height="140" fill="currentColor"/>` },
+            rectangle: { name: "Rectangle", group: "standard", color: "var(--purple)", matchColor: "rgba(167, 139, 250, 0.6)", symmetries: [180, 360], vertices: [[30,70], [210,70], [210,170], [30,170]], svgInner: `<rect x="30" y="70" width="180" height="100" fill="currentColor"/>` },
+            pentagon: { name: "Pentagon", group: "standard", color: "var(--yellow-deep)", matchColor: "rgba(229, 195, 54, 0.6)", symmetries: [72, 144, 216, 288, 360], vertices: [[120,30], [205.59,92.19], [172.9,192.8], [67.1,192.8], [34.41,92.19]], svgInner: `<polygon points="120,30 205.59,92.19 172.9,192.8 67.1,192.8 34.41,92.19" fill="currentColor"/>` },
+            hexagon: { name: "Hexagon", group: "standard", color: "var(--green)", matchColor: "rgba(107, 203, 119, 0.6)", symmetries: [60, 120, 180, 240, 300, 360], vertices: [[120,30], [197.94,75], [197.94,165], [120,210], [42.06,165], [42.06,75]], svgInner: `<polygon points="120,30 197.94,75 197.94,165 120,210 42.06,165 42.06,75" fill="currentColor"/>` },
+            star: { name: "Star", group: "standard", color: "var(--coral-deep)", matchColor: "rgba(225, 78, 86, 0.6)", symmetries: [72, 144, 216, 288, 360], labelInset: 10, referenceOffset: 10, vertices: [[120,30], [141.16,90.88], [205.59,92.19], [154.24,131.12], [172.9,192.8], [120,156], [67.1,192.8], [85.76,131.12], [34.41,92.19], [98.84,90.88]], svgInner: `<polygon points="120,30 141.16,90.88 205.59,92.19 154.24,131.12 172.9,192.8 120,156 67.1,192.8 85.76,131.12 34.41,92.19 98.84,90.88" fill="currentColor"/>` },
+            parallelogram: { name: "Parallelogram", group: "standard", color: "var(--teal-deep)", matchColor: "rgba(47, 167, 158, 0.6)", symmetries: [180, 360], vertices: [[60,80], [200,80], [180,160], [40,160]], svgInner: `<polygon points="60,80 200,80 180,160 40,160" fill="currentColor"/>` },
+            rhombus: { name: "Rhombus", group: "standard", color: "var(--purple-deep)", matchColor: "rgba(124, 92, 224, 0.6)", symmetries: [180, 360], vertices: [[120,30], [190,120], [120,210], [50,120]], svgInner: `<polygon points="120,30 190,120 120,210 50,120" fill="currentColor"/>` },
             
             // Custom Adventure Shapes
             compass: {
@@ -236,7 +273,9 @@
 
         const tabsContainer = document.getElementById('shape-tabs');
         const bgSvg = document.getElementById('shape-bg');
+        const referenceSvg = document.getElementById('vertex-reference');
         const fgSvg = document.getElementById('shape-fg');
+        const vertexKey = document.getElementById('vertex-key');
         const slider = document.getElementById('angle-slider');
         const readout = document.getElementById('angle-readout');
         const feedbackMsg = document.getElementById('feedback-msg');
@@ -269,6 +308,23 @@
             slider.addEventListener('input', handleRotation);
         }
 
+        function createVertexLabels(vertices, className, offset) {
+            return vertices.map(([x, y], index) => {
+                const dx = x - 120;
+                const dy = y - 120;
+                const distance = Math.hypot(dx, dy) || 1;
+                const labelX = (x + (dx / distance) * offset).toFixed(2);
+                const labelY = (y + (dy / distance) * offset).toFixed(2);
+                const letter = String.fromCharCode(65 + index);
+                const badge = `<circle cx="0" cy="0" r="10"></circle><text x="0" y="0">${letter}</text>`;
+
+                if (className === 'vertex-marker') {
+                    return `<g class="${className}" transform="translate(${labelX} ${labelY})"><g class="vertex-marker-content">${badge}</g></g>`;
+                }
+                return `<g class="${className}" transform="translate(${labelX} ${labelY})">${badge}</g>`;
+            }).join('');
+        }
+
         function loadShape(key) {
             currentShapeKey = key;
             const data = shapesData[key];
@@ -279,10 +335,17 @@
                 if (btn.innerText === data.name) btn.classList.add('active');
             });
 
+            const vertices = data.vertices || [];
+            const referenceLabels = createVertexLabels(vertices, 'vertex-reference-badge', data.referenceOffset ?? 14);
+            const movingLabels = createVertexLabels(vertices, 'vertex-marker', -(data.labelInset ?? 18));
+
             bgSvg.innerHTML = data.svgInner;
             bgSvg.style.color = data.color;
-            fgSvg.innerHTML = data.svgInner;
+            referenceSvg.innerHTML = referenceLabels;
+            referenceSvg.style.color = data.color;
+            fgSvg.innerHTML = data.svgInner + movingLabels;
             fgSvg.style.color = data.color;
+            vertexKey.hidden = vertices.length === 0;
             workspace.style.setProperty('--match-color', data.matchColor);
 
             slider.value = 0;
@@ -291,7 +354,7 @@
             if(data.symmetries.length === 1 && data.symmetries[0] === 360) {
                 feedbackMsg.innerText = "Rotate to find if it has any symmetry at all!";
             } else {
-                feedbackMsg.innerText = `Rotate to find ${data.symmetries.length} lines of symmetry!`;
+                feedbackMsg.innerText = `Rotate to find ${data.symmetries.length} matching rotational positions!`;
             }
 
             feedbackMsg.classList.remove('success');
@@ -321,6 +384,7 @@
 
         function updateRotationVisuals(angle, isMatch = false) {
             const data = shapesData[currentShapeKey];
+            fgSvg.style.setProperty('--counter-rotation-angle', `${-angle}deg`);
             fgSvg.style.transform = `rotate(${angle}deg)`;
             readout.innerText = `${angle}°`;
 

@@ -658,10 +658,15 @@
         }
 
         function drawPolygon(points, fill, stroke, dash = [], lineWidth = 3) {
-            if (!points.length) return;
+            const normalizedPoints = points.map(point => Array.isArray(point)
+                ? { x: point[0], y: point[1] }
+                : point
+            ).filter(point => Number.isFinite(point.x) && Number.isFinite(point.y));
+            if (!normalizedPoints.length) return;
+
             reflectionCtx.beginPath();
-            reflectionCtx.moveTo(points[0].x, points[0].y);
-            points.slice(1).forEach(point => reflectionCtx.lineTo(point.x, point.y));
+            reflectionCtx.moveTo(normalizedPoints[0].x, normalizedPoints[0].y);
+            normalizedPoints.slice(1).forEach(point => reflectionCtx.lineTo(point.x, point.y));
             reflectionCtx.closePath();
             reflectionCtx.fillStyle = fill;
             reflectionCtx.fill();

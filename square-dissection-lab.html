@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Square Split Lab | Math Adventure Hub</title>
+    <meta name="description" content="Choose a square grid, tile it with smaller squares, and try to use as few pieces as possible.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%A9%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #17324d;
+            --ink: #26354a;
+            --muted: #667085;
+            --paper: #fffdf8;
+            --blue: #3b82f6;
+            --blue-dark: #2367cc;
+            --teal: #20b8a9;
+            --teal-dark: #13897f;
+            --coral: #ff6b6b;
+            --yellow: #ffd93d;
+            --purple: #9b7bea;
+            --green: #69c875;
+            --line: #d9e2ec;
+            --shadow: 0 14px 38px rgba(23, 50, 77, .12);
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: 'Quicksand', system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 7% 5%, rgba(255, 217, 61, .28), transparent 24rem),
+                radial-gradient(circle at 95% 35%, rgba(32, 184, 169, .18), transparent 28rem),
+                linear-gradient(180deg, #eaf6ff 0%, #f7f2ff 100%);
+        }
+
+        button, input { font: inherit; }
+        button { -webkit-tap-highlight-color: transparent; }
+        a { color: inherit; }
+
+        .topbar {
+            min-height: 66px;
+            padding: 10px clamp(16px, 4vw, 52px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            color: #fff;
+            background: var(--navy);
+            box-shadow: 0 4px 14px rgba(23, 50, 77, .2);
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+            font-size: 1.18rem;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            color: var(--navy);
+            background: var(--yellow);
+            box-shadow: 0 3px 0 #d8b824;
+            transform: rotate(-3deg);
+        }
+
+        .back-link {
+            padding: 8px 14px;
+            border: 2px solid rgba(255,255,255,.38);
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .hero {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 44px 22px 30px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 36px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 13px;
+            border-radius: 999px;
+            color: #fff;
+            background: var(--coral);
+            font-weight: 800;
+            box-shadow: 0 4px 0 #d84f52;
+        }
+
+        h1, h2, h3 { font-family: 'Baloo 2', sans-serif; line-height: 1.08; }
+        h1 {
+            margin: 18px 0 9px;
+            color: var(--navy);
+            font-size: clamp(2.5rem, 6vw, 4.7rem);
+            letter-spacing: -.035em;
+        }
+
+        .hero p {
+            max-width: 690px;
+            margin: 0;
+            color: #52637a;
+            font-size: clamp(1.03rem, 2vw, 1.25rem);
+            font-weight: 600;
+        }
+
+        .hero-art {
+            width: 168px;
+            aspect-ratio: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 12px;
+            border: 6px solid var(--navy);
+            background: #fff;
+            box-shadow: 10px 10px 0 var(--yellow);
+            transform: rotate(3deg);
+        }
+
+        .hero-art span:nth-child(1) { background: var(--blue); }
+        .hero-art span:nth-child(2) { background: var(--teal); }
+        .hero-art span:nth-child(3) { background: var(--purple); }
+        .hero-art span:nth-child(4) { background: var(--coral); }
+
+        .app-shell {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 0 20px 64px;
+        }
+
+        .lab {
+            display: grid;
+            grid-template-columns: minmax(265px, 320px) minmax(0, 1fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .card {
+            background: rgba(255,255,255,.95);
+            border: 1px solid rgba(23,50,77,.09);
+            border-radius: 26px;
+            box-shadow: var(--shadow);
+        }
+
+        .controls {
+            position: sticky;
+            top: 18px;
+            padding: 23px;
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            flex: 0 0 auto;
+            width: 35px;
+            height: 35px;
+            display: grid;
+            place-items: center;
+            border-radius: 11px;
+            color: #fff;
+            background: var(--navy);
+            font-family: 'Baloo 2', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+
+        .panel-heading h2 { margin: 0; font-size: 1.4rem; }
+        .control-group + .control-group {
+            margin-top: 19px;
+            padding-top: 19px;
+            border-top: 1px dashed #cbd7e3;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 9px;
+            font-weight: 800;
+        }
+
+        .readout {
+            min-width: 56px;
+            padding: 3px 9px;
+            border-radius: 9px;
+            text-align: center;
+            color: #fff;
+            background: var(--blue);
+            font-family: 'Baloo 2', sans-serif;
+            font-weight: 800;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--blue);
+            cursor: pointer;
+        }
+
+        .presets, .mode-row, .action-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip, .mode-btn, .action-btn {
+            border: 0;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+        }
+
+        .chip {
+            min-width: 43px;
+            padding: 7px 11px;
+            color: var(--navy);
+            background: #eaf2fb;
+        }
+
+        .chip:hover, .chip.active { color: #fff; background: var(--blue); }
+        .chip:active, .mode-btn:active, .action-btn:active { transform: translateY(2px); }
+
+        .size-input-row {
+            display: grid;
+            grid-template-columns: 1fr 74px;
+            gap: 9px;
+            align-items: center;
+        }
+
+        .number-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #c8d5e3;
+            border-radius: 11px;
+            color: var(--navy);
+            background: #fff;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .control-group small {
+            display: block;
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: .78rem;
+            font-weight: 700;
+        }
+
+        .mode-btn {
+            flex: 1 1 112px;
+            padding: 10px 12px;
+            color: var(--navy);
+            background: #eef3f8;
+        }
+
+        .mode-btn.active {
+            color: #fff;
+            background: var(--navy);
+            box-shadow: 0 4px 0 #071d31;
+        }
+
+        .action-btn {
+            flex: 1 1 112px;
+            padding: 10px 12px;
+            color: #fff;
+            background: var(--teal-dark);
+            box-shadow: 0 4px 0 #087167;
+        }
+
+        .action-btn.secondary { color: var(--navy); background: #e8eef5; box-shadow: 0 4px 0 #c3ceda; }
+        .action-btn.warning { background: var(--coral); box-shadow: 0 4px 0 #cf4b50; }
+        .action-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+        .tip-box {
+            margin-top: 18px;
+            padding: 13px 14px;
+            border: 2px solid #f2d45b;
+            border-radius: 15px;
+            background: #fff8cd;
+            color: #654f04;
+            font-size: .91rem;
+            font-weight: 700;
+        }
+
+        .workspace { padding: 20px; }
+        .score-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .score-box {
+            min-width: 0;
+            padding: 11px 8px;
+            border-radius: 16px;
+            background: #f3f7fb;
+            text-align: center;
+        }
+
+        .score-box span { display: block; color: var(--muted); font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+        .score-box strong { display: block; margin-top: 2px; color: var(--navy); font-family: 'Baloo 2', sans-serif; font-size: clamp(1.1rem, 3vw, 1.65rem); line-height: 1; }
+
+        .challenge-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 12px 15px;
+            border-radius: 16px;
+            color: #fff;
+            background: linear-gradient(100deg, var(--purple), #7056c7);
+        }
+
+        .challenge-banner strong { font-family: 'Baloo 2', sans-serif; font-size: 1.1rem; }
+        .challenge-banner span { font-size: .86rem; font-weight: 700; opacity: .94; }
+
+        .canvas-wrap {
+            position: relative;
+            width: min(100%, 720px);
+            margin: 0 auto;
+            border: 5px solid var(--navy);
+            background: #fff;
+            box-shadow: 8px 8px 0 rgba(255,217,61,.92);
+            touch-action: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1;
+            cursor: crosshair;
+        }
+
+        .canvas-wrap.erase canvas { cursor: pointer; }
+
+        .board-message {
+            min-height: 52px;
+            margin: 18px auto 0;
+            padding: 12px 16px;
+            border-radius: 16px;
+            color: var(--navy);
+            background: #edf5ff;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .board-message.success { color: #075f43; background: #dff9ed; }
+        .board-message.error { color: #9b2730; background: #ffe5e6; }
+
+        .how-to {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .how-card { padding: 20px; }
+        .how-card .icon { font-size: 2rem; }
+        .how-card h3 { margin: 8px 0 6px; color: var(--navy); font-size: 1.18rem; }
+        .how-card p { margin: 0; color: var(--muted); font-size: .93rem; font-weight: 600; }
+
+        .confetti {
+            position: fixed;
+            z-index: 100;
+            top: -20px;
+            width: 12px;
+            height: 18px;
+            pointer-events: none;
+            animation: fall 1.6s ease-in forwards;
+        }
+
+        @keyframes fall {
+            to { transform: translate3d(var(--drift), 105vh, 0) rotate(760deg); opacity: .2; }
+        }
+
+        button:focus-visible, input:focus-visible, a:focus-visible {
+            outline: 3px solid var(--yellow);
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 880px) {
+            .hero { grid-template-columns: 1fr; }
+            .hero-art { display: none; }
+            .lab { grid-template-columns: 1fr; }
+            .controls { position: static; }
+            .control-sections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+            .control-group + .control-group { margin-top: 0; padding-top: 0; border-top: 0; }
+            .tip-box { grid-column: 1 / -1; }
+        }
+
+        @media (max-width: 620px) {
+            .topbar { align-items: flex-start; }
+            .brand span:last-child { display: none; }
+            .hero { padding-top: 30px; }
+            .hero p { font-size: 1rem; }
+            .control-sections { grid-template-columns: 1fr; }
+            .workspace { padding: 13px; }
+            .score-row { grid-template-columns: repeat(2, 1fr); }
+            .challenge-banner { align-items: flex-start; flex-direction: column; }
+            .canvas-wrap { border-width: 4px; box-shadow: 5px 5px 0 rgba(255,217,61,.92); }
+            .how-to { grid-template-columns: 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+            .confetti { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="index.html">
+            <span class="brand-mark">▦</span>
+            <span>Math Adventure Hub</span>
+        </a>
+        <a class="back-link" href="index.html">← Back to all games</a>
+    </header>
+
+    <section class="hero">
+        <div>
+            <span class="eyebrow">🧩 Hands-on puzzle</span>
+            <h1>Square Split Lab</h1>
+            <p>Fill one big square with smaller squares. Every piece must fit the grid, no pieces may overlap—and the lower your score, the better!</p>
+        </div>
+        <div class="hero-art" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+    </section>
+
+    <main class="app-shell">
+        <section class="lab" aria-label="Square dissection game">
+            <aside class="controls card">
+                <div class="panel-heading">
+                    <span class="step-number">1</span>
+                    <h2>Build your puzzle</h2>
+                </div>
+
+                <div class="control-sections">
+                    <div class="control-group">
+                        <label class="control-label" for="board-size">
+                            Big square size
+                            <span class="readout" id="board-readout">5×5</span>
+                        </label>
+                        <div class="size-input-row">
+                            <input id="board-size" type="range" min="2" max="30" value="5" aria-describedby="board-limit">
+                            <input class="number-input" id="board-number" type="number" min="2" max="30" value="5" aria-label="Big square side length">
+                        </div>
+                        <div class="presets" aria-label="Popular grid sizes" style="margin-top:10px">
+                            <button class="chip" type="button" data-board="4">4×4</button>
+                            <button class="chip active" type="button" data-board="5">5×5</button>
+                            <button class="chip" type="button" data-board="7">7×7</button>
+                            <button class="chip" type="button" data-board="9">9×9</button>
+                            <button class="chip" type="button" data-board="13">13×13</button>
+                        </div>
+                        <small id="board-limit">Choose any classroom grid from 2×2 to 30×30.</small>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="piece-size">
+                            Smaller square
+                            <span class="readout" id="piece-readout">3×3</span>
+                        </label>
+                        <div class="size-input-row">
+                            <input id="piece-size" type="range" min="1" max="4" value="3">
+                            <input class="number-input" id="piece-number" type="number" min="1" max="4" value="3" aria-label="Smaller square side length">
+                        </div>
+                        <div class="presets" id="piece-presets" aria-label="Quick piece sizes" style="margin-top:10px"></div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label">Tool</div>
+                        <div class="mode-row" role="group" aria-label="Board tool">
+                            <button class="mode-btn active" type="button" id="place-mode" aria-pressed="true">➕ Place</button>
+                            <button class="mode-btn" type="button" id="erase-mode" aria-pressed="false">🧽 Remove</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label">Try, change, improve</div>
+                        <div class="action-grid">
+                            <button class="action-btn secondary" type="button" id="undo-btn">↶ Undo</button>
+                            <button class="action-btn" type="button" id="hint-btn">💡 Hint</button>
+                            <button class="action-btn" type="button" id="example-btn">👀 Example</button>
+                            <button class="action-btn warning" type="button" id="clear-btn">↻ Start over</button>
+                        </div>
+                    </div>
+
+                    <div class="tip-box" id="tip-box">Choose a smaller square, then tap a grid corner to place it.</div>
+                </div>
+            </aside>
+
+            <section class="workspace card">
+                <div class="score-row" aria-label="Puzzle score">
+                    <div class="score-box"><span>Pieces</span><strong id="piece-count">0</strong></div>
+                    <div class="score-box"><span>Covered</span><strong id="coverage">0%</strong></div>
+                    <div class="score-box"><span>Area left</span><strong id="area-left">25</strong></div>
+                    <div class="score-box"><span>Your best</span><strong id="best-score">—</strong></div>
+                </div>
+
+                <div class="challenge-banner">
+                    <strong id="challenge-title">5×5 challenge: aim for 8 pieces</strong>
+                    <span id="challenge-note">Can you find the arrangement yourself?</span>
+                </div>
+
+                <div class="canvas-wrap" id="canvas-wrap">
+                    <canvas id="board" width="720" height="720" aria-label="Interactive square dissection grid"></canvas>
+                </div>
+
+                <div class="board-message" id="board-message" role="status" aria-live="polite">Select a piece size and place your first square.</div>
+            </section>
+        </section>
+
+        <section class="how-to" aria-label="Puzzle strategy">
+            <article class="how-card card">
+                <div class="icon">📐</div>
+                <h3>Everything stays square</h3>
+                <p>The pieces snap to grid lines. The game blocks overlaps and pieces that would stick outside.</p>
+            </article>
+            <article class="how-card card">
+                <div class="icon">🏆</div>
+                <h3>Count pieces, not area</h3>
+                <p>A large square and a tiny square each add one point. Try to cover more area with every move.</p>
+            </article>
+            <article class="how-card card">
+                <div class="icon">🔁</div>
+                <h3>Rearrange your idea</h3>
+                <p>Remove a piece or undo a move. A small change near the middle can reduce the final score.</p>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        (() => {
+            'use strict';
+
+            const LOGICAL_SIZE = 720;
+            const palette = ['#3b82f6', '#20b8a9', '#9b7bea', '#ff6b6b', '#69c875', '#ffd93d', '#f59e52'];
+            const examples = {
+                5: [[0,0,3],[3,0,2],[0,3,2],[3,3,2],[3,2,1],[4,2,1],[2,3,1],[2,4,1]],
+                7: [[0,0,4],[4,0,3],[0,4,3],[5,3,2],[3,5,2],[5,5,2],[4,3,1],[3,4,1],[4,4,1]],
+                13: [[0,0,7],[7,0,6],[0,7,6],[7,6,2],[9,6,4],[6,8,3],[6,7,1],[9,10,1],[6,11,2],[8,11,2],[10,10,3]]
+            };
+
+            const canvas = document.getElementById('board');
+            const ctx = canvas.getContext('2d');
+            const canvasWrap = document.getElementById('canvas-wrap');
+            const boardSizeInput = document.getElementById('board-size');
+            const boardNumberInput = document.getElementById('board-number');
+            const pieceSizeInput = document.getElementById('piece-size');
+            const pieceNumberInput = document.getElementById('piece-number');
+            const boardReadout = document.getElementById('board-readout');
+            const pieceReadout = document.getElementById('piece-readout');
+            const piecePresets = document.getElementById('piece-presets');
+            const pieceCount = document.getElementById('piece-count');
+            const coverage = document.getElementById('coverage');
+            const areaLeft = document.getElementById('area-left');
+            const bestScore = document.getElementById('best-score');
+            const challengeTitle = document.getElementById('challenge-title');
+            const challengeNote = document.getElementById('challenge-note');
+            const boardMessage = document.getElementById('board-message');
+            const tipBox = document.getElementById('tip-box');
+            const placeModeButton = document.getElementById('place-mode');
+            const eraseModeButton = document.getElementById('erase-mode');
+            const undoButton = document.getElementById('undo-btn');
+            const hintButton = document.getElementById('hint-btn');
+            const exampleButton = document.getElementById('example-btn');
+            const clearButton = document.getElementById('clear-btn');
+
+            let boardSize = 5;
+            let selectedSize = 3;
+            let mode = 'place';
+            let tiles = [];
+            let history = [];
+            let hoverCell = null;
+            let exampleLoaded = false;
+            let lastCompleteSignature = '';
+
+            function cloneTiles(source = tiles) {
+                return source.map(tile => ({ ...tile }));
+            }
+
+            function draftKey(size = boardSize) { return `squareSplitLab:draft:v1:${size}`; }
+            function bestKey(size = boardSize) { return `squareSplitLab:best:v1:${size}`; }
+
+            function saveDraft() {
+                if (exampleLoaded) return;
+                try { localStorage.setItem(draftKey(), JSON.stringify(tiles)); } catch (_) { /* storage can be unavailable */ }
+            }
+
+            function loadDraft(size) {
+                try {
+                    const saved = JSON.parse(localStorage.getItem(draftKey(size)) || '[]');
+                    if (!Array.isArray(saved)) return [];
+                    return saved
+                        .filter(tile => Number.isInteger(tile.row) && Number.isInteger(tile.col) && Number.isInteger(tile.size) && tile.size > 0 && tile.row >= 0 && tile.col >= 0 && tile.row + tile.size <= size && tile.col + tile.size <= size)
+                        .map((tile, index) => ({ ...tile, color: Number.isInteger(tile.color) ? tile.color : index }));
+                } catch (_) { return []; }
+            }
+
+            function getBest() {
+                try { return localStorage.getItem(bestKey()) || '—'; } catch (_) { return '—'; }
+            }
+
+            function setBest(score) {
+                try { localStorage.setItem(bestKey(), String(score)); } catch (_) { /* storage can be unavailable */ }
+            }
+
+            function occupancy() {
+                const cells = Array.from({ length: boardSize }, () => Array(boardSize).fill(-1));
+                tiles.forEach((tile, index) => {
+                    for (let row = tile.row; row < tile.row + tile.size; row += 1) {
+                        for (let col = tile.col; col < tile.col + tile.size; col += 1) cells[row][col] = index;
+                    }
+                });
+                return cells;
+            }
+
+            function coveredArea() {
+                return tiles.reduce((sum, tile) => sum + tile.size * tile.size, 0);
+            }
+
+            function canPlace(row, col, size) {
+                if (row < 0 || col < 0 || row + size > boardSize || col + size > boardSize) return false;
+                const cells = occupancy();
+                for (let r = row; r < row + size; r += 1) {
+                    for (let c = col; c < col + size; c += 1) if (cells[r][c] !== -1) return false;
+                }
+                return true;
+            }
+
+            function setCanvasResolution() {
+                const ratio = Math.min(window.devicePixelRatio || 1, 2);
+                canvas.width = LOGICAL_SIZE * ratio;
+                canvas.height = LOGICAL_SIZE * ratio;
+                ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            }
+
+            function roundedRect(context, x, y, width, height, radius) {
+                const r = Math.min(radius, width / 2, height / 2);
+                context.beginPath();
+                context.moveTo(x + r, y);
+                context.lineTo(x + width - r, y);
+                context.quadraticCurveTo(x + width, y, x + width, y + r);
+                context.lineTo(x + width, y + height - r);
+                context.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+                context.lineTo(x + r, y + height);
+                context.quadraticCurveTo(x, y + height, x, y + height - r);
+                context.lineTo(x, y + r);
+                context.quadraticCurveTo(x, y, x + r, y);
+                context.closePath();
+            }
+
+            function draw() {
+                const cell = LOGICAL_SIZE / boardSize;
+                ctx.clearRect(0, 0, LOGICAL_SIZE, LOGICAL_SIZE);
+                ctx.fillStyle = '#fffdf8';
+                ctx.fillRect(0, 0, LOGICAL_SIZE, LOGICAL_SIZE);
+
+                tiles.forEach((tile, index) => {
+                    const x = tile.col * cell;
+                    const y = tile.row * cell;
+                    const sizePx = tile.size * cell;
+                    const inset = Math.max(1.5, Math.min(4, cell * .07));
+                    ctx.fillStyle = palette[tile.color % palette.length];
+                    ctx.fillRect(x + inset, y + inset, sizePx - inset * 2, sizePx - inset * 2);
+                    ctx.strokeStyle = '#17324d';
+                    ctx.lineWidth = Math.max(2, Math.min(5, cell * .09));
+                    ctx.strokeRect(x + inset, y + inset, sizePx - inset * 2, sizePx - inset * 2);
+
+                    if (sizePx > 46) {
+                        ctx.fillStyle = tile.color % palette.length === 5 ? '#17324d' : '#fff';
+                        ctx.font = `800 ${Math.max(14, Math.min(31, sizePx * .19))}px "Baloo 2", sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.shadowColor = 'rgba(23,50,77,.28)';
+                        ctx.shadowBlur = 3;
+                        ctx.fillText(`${tile.size}×${tile.size}`, x + sizePx / 2, y + sizePx / 2);
+                        ctx.shadowBlur = 0;
+                    }
+                });
+
+                if (hoverCell) {
+                    const tileIndex = occupancy()[hoverCell.row]?.[hoverCell.col] ?? -1;
+                    if (mode === 'erase' && tileIndex >= 0) {
+                        const tile = tiles[tileIndex];
+                        ctx.fillStyle = 'rgba(255, 68, 77, .28)';
+                        ctx.fillRect(tile.col * cell, tile.row * cell, tile.size * cell, tile.size * cell);
+                    } else if (mode === 'place') {
+                        const valid = canPlace(hoverCell.row, hoverCell.col, selectedSize);
+                        ctx.fillStyle = valid ? 'rgba(59,130,246,.28)' : 'rgba(255,68,77,.25)';
+                        ctx.fillRect(hoverCell.col * cell, hoverCell.row * cell, selectedSize * cell, selectedSize * cell);
+                        ctx.strokeStyle = valid ? '#2367cc' : '#dc3943';
+                        ctx.lineWidth = 4;
+                        ctx.setLineDash([10, 7]);
+                        ctx.strokeRect(hoverCell.col * cell + 2, hoverCell.row * cell + 2, selectedSize * cell - 4, selectedSize * cell - 4);
+                        ctx.setLineDash([]);
+                    }
+                }
+
+                ctx.lineWidth = boardSize > 18 ? .65 : 1;
+                ctx.strokeStyle = 'rgba(23,50,77,.23)';
+                for (let i = 1; i < boardSize; i += 1) {
+                    const p = i * cell;
+                    ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, LOGICAL_SIZE); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(LOGICAL_SIZE, p); ctx.stroke();
+                }
+            }
+
+            function showMessage(text, type = '') {
+                boardMessage.textContent = text;
+                boardMessage.className = `board-message${type ? ` ${type}` : ''}`;
+            }
+
+            function targetFor(size) {
+                if (size % 2 === 0) return { title: `${size}×${size} shortcut: aim for 4 pieces`, note: `Try four ${size / 2}×${size / 2} squares.`, target: 4 };
+                if (size === 5) return { title: '5×5 challenge: aim for 8 pieces', note: 'Can you find the arrangement yourself?', target: 8 };
+                if (size === 7) return { title: '7×7 challenge: aim for 9 pieces', note: 'One smart rearrangement can save a square.', target: 9 };
+                if (size === 13) return { title: '13×13 extension: try 11 pieces', note: 'This is a known classroom example, not a claim of minimality.', target: 11 };
+                return { title: `${size}×${size} open challenge`, note: 'Complete it, record your score, then try to beat it.', target: null };
+            }
+
+            function updateChallenge() {
+                const challenge = targetFor(boardSize);
+                challengeTitle.textContent = challenge.title;
+                challengeNote.textContent = challenge.note;
+                exampleButton.disabled = !(boardSize % 2 === 0 || examples[boardSize]);
+                exampleButton.title = exampleButton.disabled ? 'No example is included for this grid—make your own!' : 'Load one complete arrangement';
+            }
+
+            function updateStats() {
+                const area = coveredArea();
+                const total = boardSize * boardSize;
+                pieceCount.textContent = String(tiles.length);
+                coverage.textContent = `${Math.round(area / total * 100)}%`;
+                areaLeft.textContent = String(total - area);
+                bestScore.textContent = getBest();
+                undoButton.disabled = history.length === 0;
+                updateChallenge();
+
+                if (area === total) finishPuzzle();
+                else lastCompleteSignature = '';
+            }
+
+            function finishPuzzle() {
+                const signature = tiles.map(tile => `${tile.row},${tile.col},${tile.size}`).join('|');
+                if (signature === lastCompleteSignature) return;
+                lastCompleteSignature = signature;
+
+                if (exampleLoaded) {
+                    showMessage(`Example loaded: ${tiles.length} squares. Study the pattern, then start over and build your own!`, 'success');
+                    return;
+                }
+
+                const oldBest = Number(getBest());
+                const isNewBest = !Number.isFinite(oldBest) || tiles.length < oldBest;
+                if (isNewBest) setBest(tiles.length);
+                const target = targetFor(boardSize).target;
+                let text = isNewBest ? `New best! You filled the ${boardSize}×${boardSize} square with ${tiles.length} pieces.` : `Complete! Your score is ${tiles.length} pieces.`;
+                if (target && tiles.length <= target) text += ' You reached the challenge target!';
+                else if (target) text += ` Can you rearrange it and reach ${target}?`;
+                else text += ' Try again and use fewer.';
+                showMessage(text, 'success');
+                bestScore.textContent = getBest();
+                launchConfetti();
+            }
+
+            function launchConfetti() {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                for (let i = 0; i < 42; i += 1) {
+                    const bit = document.createElement('span');
+                    bit.className = 'confetti';
+                    bit.style.left = `${Math.random() * 100}vw`;
+                    bit.style.background = palette[i % palette.length];
+                    bit.style.setProperty('--drift', `${Math.round(Math.random() * 180 - 90)}px`);
+                    bit.style.animationDelay = `${Math.random() * .35}s`;
+                    document.body.appendChild(bit);
+                    window.setTimeout(() => bit.remove(), 2100);
+                }
+            }
+
+            function remember() {
+                history.push(cloneTiles());
+                if (history.length > 80) history.shift();
+            }
+
+            function placeTile(row, col) {
+                if (!canPlace(row, col, selectedSize)) {
+                    showMessage('That square would overlap another piece or go outside the board. Try a different corner or size.', 'error');
+                    return;
+                }
+                remember();
+                tiles.push({ row, col, size: selectedSize, color: tiles.length });
+                hoverCell = null;
+                exampleLoaded = false;
+                saveDraft();
+                showMessage(`Placed a ${selectedSize}×${selectedSize} square. Keep filling the gaps!`);
+                draw();
+                updateStats();
+            }
+
+            function removeAt(row, col) {
+                const index = occupancy()[row]?.[col] ?? -1;
+                if (index < 0) {
+                    showMessage('Tap a coloured square to remove it.', 'error');
+                    return;
+                }
+                remember();
+                const removed = tiles[index];
+                tiles.splice(index, 1);
+                exampleLoaded = false;
+                saveDraft();
+                showMessage(`Removed the ${removed.size}×${removed.size} square. Now try a better fit.`);
+                draw();
+                updateStats();
+            }
+
+            function pointerCell(event) {
+                const bounds = canvas.getBoundingClientRect();
+                const x = Math.max(0, Math.min(bounds.width - .01, event.clientX - bounds.left));
+                const y = Math.max(0, Math.min(bounds.height - .01, event.clientY - bounds.top));
+                return {
+                    col: Math.floor(x / bounds.width * boardSize),
+                    row: Math.floor(y / bounds.height * boardSize)
+                };
+            }
+
+            function setMode(nextMode) {
+                mode = nextMode;
+                placeModeButton.classList.toggle('active', mode === 'place');
+                eraseModeButton.classList.toggle('active', mode === 'erase');
+                placeModeButton.setAttribute('aria-pressed', String(mode === 'place'));
+                eraseModeButton.setAttribute('aria-pressed', String(mode === 'erase'));
+                canvasWrap.classList.toggle('erase', mode === 'erase');
+                tipBox.textContent = mode === 'place'
+                    ? 'Tap a grid corner to place the selected square. A blue preview means it fits.'
+                    : 'Tap any coloured piece to lift it out and make room for a new idea.';
+                draw();
+            }
+
+            function setPieceSize(value) {
+                selectedSize = Math.max(1, Math.min(boardSize - 1, Number(value) || 1));
+                pieceSizeInput.value = selectedSize;
+                pieceNumberInput.value = selectedSize;
+                pieceReadout.textContent = `${selectedSize}×${selectedSize}`;
+                document.querySelectorAll('[data-piece]').forEach(button => button.classList.toggle('active', Number(button.dataset.piece) === selectedSize));
+                draw();
+            }
+
+            function renderPiecePresets() {
+                piecePresets.innerHTML = '';
+                const sizes = Array.from(new Set([1, 2, Math.floor(boardSize / 2), boardSize - 1].filter(size => size >= 1 && size < boardSize))).sort((a,b) => a-b);
+                sizes.forEach(size => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'chip';
+                    button.dataset.piece = size;
+                    button.textContent = `${size}×${size}`;
+                    button.addEventListener('click', () => setPieceSize(size));
+                    piecePresets.appendChild(button);
+                });
+            }
+
+            function setBoardSize(value) {
+                saveDraft();
+                boardSize = Math.max(2, Math.min(30, Number(value) || 2));
+                boardSizeInput.value = boardSize;
+                boardNumberInput.value = boardSize;
+                boardReadout.textContent = `${boardSize}×${boardSize}`;
+                document.querySelectorAll('[data-board]').forEach(button => button.classList.toggle('active', Number(button.dataset.board) === boardSize));
+                pieceSizeInput.max = boardSize - 1;
+                pieceNumberInput.max = boardSize - 1;
+                selectedSize = Math.min(Math.max(1, Math.ceil(boardSize / 2)), boardSize - 1);
+                tiles = loadDraft(boardSize);
+                history = [];
+                hoverCell = null;
+                exampleLoaded = false;
+                lastCompleteSignature = '';
+                renderPiecePresets();
+                setPieceSize(selectedSize);
+                saveDraft();
+                showMessage(tiles.length ? `Your saved ${boardSize}×${boardSize} idea is back. Keep working on it!` : `New ${boardSize}×${boardSize} board ready. Place your first square.`);
+                updateStats();
+                draw();
+            }
+
+            function clearBoard() {
+                if (tiles.length && !window.confirm('Start this board over and remove every piece?')) return;
+                remember();
+                tiles = [];
+                exampleLoaded = false;
+                lastCompleteSignature = '';
+                saveDraft();
+                showMessage('Clean board! Try placing one of the biggest squares first.');
+                draw();
+                updateStats();
+            }
+
+            function undo() {
+                if (!history.length) return;
+                tiles = history.pop();
+                exampleLoaded = false;
+                lastCompleteSignature = '';
+                saveDraft();
+                showMessage('Last move undone.');
+                draw();
+                updateStats();
+            }
+
+            function hint() {
+                const cells = occupancy();
+                let firstEmpty = null;
+                for (let row = 0; row < boardSize && !firstEmpty; row += 1) {
+                    for (let col = 0; col < boardSize; col += 1) {
+                        if (cells[row][col] === -1) { firstEmpty = { row, col }; break; }
+                    }
+                }
+                if (!firstEmpty) {
+                    showMessage('Your board is complete. Try starting over and beating your score!', 'success');
+                    return;
+                }
+
+                let largest = 1;
+                for (let size = boardSize - 1; size >= 1; size -= 1) {
+                    if (canPlace(firstEmpty.row, firstEmpty.col, size)) { largest = size; break; }
+                }
+                setPieceSize(largest);
+                hoverCell = firstEmpty;
+                draw();
+                showMessage(`Hint: at the first empty corner, a ${largest}×${largest} square fits. Is using the largest possible piece always best?`);
+            }
+
+            function loadExample() {
+                let pieces;
+                if (boardSize % 2 === 0) {
+                    const half = boardSize / 2;
+                    pieces = [[0,0,half],[half,0,half],[0,half,half],[half,half,half]];
+                } else {
+                    pieces = examples[boardSize];
+                }
+                if (!pieces) return;
+                if (tiles.length && !window.confirm('Replace your current idea with the example?')) return;
+                remember();
+                tiles = pieces.map(([col,row,size], index) => ({ col, row, size, color: index }));
+                exampleLoaded = true;
+                hoverCell = null;
+                draw();
+                updateStats();
+            }
+
+            canvas.addEventListener('pointermove', event => {
+                hoverCell = pointerCell(event);
+                draw();
+            });
+
+            canvas.addEventListener('pointerleave', () => {
+                hoverCell = null;
+                draw();
+            });
+
+            canvas.addEventListener('pointerdown', event => {
+                event.preventDefault();
+                const cell = pointerCell(event);
+                hoverCell = cell;
+                if (mode === 'place') placeTile(cell.row, cell.col);
+                else removeAt(cell.row, cell.col);
+            });
+
+            canvas.addEventListener('contextmenu', event => {
+                event.preventDefault();
+                const cell = pointerCell(event);
+                removeAt(cell.row, cell.col);
+            });
+
+            boardSizeInput.addEventListener('input', event => setBoardSize(event.target.value));
+            boardNumberInput.addEventListener('change', event => setBoardSize(event.target.value));
+            pieceSizeInput.addEventListener('input', event => setPieceSize(event.target.value));
+            pieceNumberInput.addEventListener('change', event => setPieceSize(event.target.value));
+            document.querySelectorAll('[data-board]').forEach(button => button.addEventListener('click', () => setBoardSize(button.dataset.board)));
+            placeModeButton.addEventListener('click', () => setMode('place'));
+            eraseModeButton.addEventListener('click', () => setMode('erase'));
+            undoButton.addEventListener('click', undo);
+            hintButton.addEventListener('click', hint);
+            exampleButton.addEventListener('click', loadExample);
+            clearButton.addEventListener('click', clearBoard);
+            window.addEventListener('resize', () => { setCanvasResolution(); draw(); });
+
+            setCanvasResolution();
+            setBoardSize(5);
+            setMode('place');
+        })();
+    </script>
+</body>
+</html>

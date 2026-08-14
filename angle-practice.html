@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle Lab | Math Adventure Hub</title>
+    <meta name="description" content="Generate random angles, measure them with a draggable protractor and reveal the angle size and type.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #26324a;
+            --muted: #667085;
+            --teal: #36b9ae;
+            --teal-dark: #168d86;
+            --purple: #8c6ce9;
+            --purple-dark: #6545c8;
+            --coral: #ff6b6b;
+            --coral-dark: #df4f59;
+            --yellow: #ffd93d;
+            --green: #52b96b;
+            --paper: #fff;
+            --shadow: 0 14px 36px rgba(39, 53, 84, .13);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { min-height: 100%; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Quicksand", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 8% 92%, rgba(255, 217, 61, .3), transparent 23rem),
+                radial-gradient(circle at 92% 10%, rgba(140, 108, 233, .2), transparent 27rem),
+                linear-gradient(145deg, #effbfa, #f6f2ff);
+        }
+
+        button, input, select { font: inherit; }
+        button { color: inherit; }
+
+        .topbar {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 12px clamp(16px, 3vw, 42px);
+            color: white;
+            background: linear-gradient(120deg, var(--purple-dark), var(--coral-dark));
+            box-shadow: 0 6px 20px rgba(45, 49, 66, .17);
+        }
+
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+            padding: 9px 14px;
+            border: 2px solid rgba(255,255,255,.56);
+            border-radius: 999px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            background: rgba(255,255,255,.12);
+        }
+
+        .brand { min-width: 0; flex: 1; }
+        .brand h1 { margin: 0; font: 800 clamp(1.35rem, 3vw, 2rem)/1 "Baloo 2", sans-serif; }
+        .brand p { margin: 3px 0 0; color: rgba(255,255,255,.86); font-size: .92rem; }
+
+        .page { max-width: 1480px; margin: 0 auto; padding: 22px clamp(12px, 2.5vw, 34px) 40px; }
+
+        .mission {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border: 2px solid rgba(140, 108, 233, .17);
+            border-radius: 18px;
+            background: rgba(255,255,255,.84);
+            box-shadow: 0 6px 18px rgba(45,49,66,.07);
+        }
+        .mission-emoji { font-size: 2rem; }
+        .mission strong { font-family: "Baloo 2", sans-serif; font-size: 1.1rem; }
+        .mission p { margin: 1px 0 0; color: var(--muted); }
+
+        .lab-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 17px; align-items: stretch; }
+        .panel {
+            border: 2px solid rgba(124, 144, 177, .18);
+            border-radius: 25px;
+            background: rgba(255,255,255,.95);
+            box-shadow: var(--shadow);
+        }
+
+        .stage-panel { min-width: 0; overflow: hidden; }
+        .stage-top {
+            min-height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 2px solid #e7edf4;
+        }
+        .stage-title { font-weight: 800; }
+        .stage-title span { color: var(--purple-dark); }
+        .stage-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .small-btn {
+            border: 2px solid #dce5ef;
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: #fff;
+            font-size: .82rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .small-btn[aria-pressed="true"] { color: #08756f; border-color: #80d7cf; background: #e6fbf8; }
+
+        #angleStage {
+            width: 100%;
+            min-height: 590px;
+            display: block;
+            touch-action: none;
+            user-select: none;
+            background: #fbfdff;
+        }
+        #protractorGroup { cursor: grab; }
+        #protractorGroup.dragging { cursor: grabbing; }
+        .rotate-handle { cursor: crosshair; }
+
+        .control-panel { padding: 17px; display: flex; flex-direction: column; gap: 13px; }
+        .control-panel h2 { margin: 0; font: 800 1.28rem/1.1 "Baloo 2", sans-serif; }
+        .eyebrow { margin: -5px 0 0; color: var(--muted); font-size: .86rem; }
+
+        .reveal-btn {
+            width: 100%;
+            min-height: 68px;
+            display: grid;
+            grid-template-columns: 42px 1fr auto;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 13px;
+            border: 0;
+            border-radius: 17px;
+            color: white;
+            background: #28334b;
+            box-shadow: 0 5px 0 #151c2d;
+            text-align: left;
+            cursor: pointer;
+        }
+        .reveal-btn:hover { background: #323e59; }
+        .reveal-btn[data-revealed="true"] { color: var(--ink); background: #fff7cf; box-shadow: 0 5px 0 #dfc94d; }
+        .reveal-eye { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: rgba(255,255,255,.14); font-size: 1.2rem; }
+        .reveal-btn[data-revealed="true"] .reveal-eye { background: rgba(255,217,61,.45); }
+        .reveal-label { font-weight: 700; font-size: .83rem; opacity: .82; }
+        .reveal-value { font: 800 1.24rem/1 "Baloo 2", sans-serif; color: var(--yellow); }
+        .reveal-btn[data-revealed="true"] .reveal-value { color: var(--purple-dark); }
+
+        .challenge-box { padding: 13px; border-radius: 17px; background: #f2f7ff; }
+        .challenge-box label { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 800; }
+        .challenge-box select, .guess-row input {
+            width: 100%;
+            border: 2px solid #d9e4ef;
+            border-radius: 12px;
+            padding: 10px 11px;
+            color: var(--ink);
+            background: white;
+            font-weight: 700;
+        }
+
+        .new-angle-btn {
+            width: 100%;
+            min-height: 57px;
+            border: 0;
+            border-radius: 16px;
+            color: white;
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            box-shadow: 0 5px 0 #4c319e;
+            font: 800 1.02rem/1 "Baloo 2", sans-serif;
+            cursor: pointer;
+        }
+        .new-angle-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #4c319e; }
+
+        .guess-box { padding: 13px; border-radius: 17px; background: #edf9ef; }
+        .guess-box h3 { margin: 0 0 8px; font: 800 1rem/1.1 "Baloo 2", sans-serif; }
+        .guess-row { display: grid; grid-template-columns: 1fr 82px; gap: 8px; }
+        .check-btn { border: 0; border-radius: 12px; color: white; background: var(--green); font-weight: 800; cursor: pointer; }
+        .feedback { min-height: 22px; margin: 7px 0 0; font-size: .84rem; font-weight: 800; }
+        .feedback.good { color: #137a34; }
+        .feedback.try { color: #a14c14; }
+
+        .tip-card { padding: 12px; border-radius: 16px; background: #f3efff; }
+        .tip-card h3 { margin: 0 0 5px; font: 800 .98rem/1.1 "Baloo 2", sans-serif; }
+        .tip-card p { margin: 0; color: var(--muted); font-size: .83rem; line-height: 1.45; }
+        .scale-key { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 8px; font-size: .75rem; font-weight: 800; }
+        .scale-key span { display: inline-flex; align-items: center; gap: 4px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+        .sr-only {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+        :focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+
+        @media (max-width: 980px) {
+            .lab-grid { grid-template-columns: 1fr; }
+            .control-panel { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .control-panel h2, .control-panel .eyebrow, .new-angle-btn { grid-column: 1 / -1; }
+        }
+        @media (max-width: 650px) {
+            .topbar { flex-wrap: wrap; }
+            .brand { order: -1; flex-basis: calc(100% - 105px); }
+            .brand p { display: none; }
+            .stage-top { align-items: flex-start; flex-direction: column; }
+            .stage-actions { justify-content: flex-start; }
+            #angleStage { min-height: 470px; }
+            .control-panel { grid-template-columns: 1fr; }
+            .control-panel h2, .control-panel .eyebrow, .new-angle-btn { grid-column: auto; }
+            .mission { align-items: flex-start; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="home-link" href="index.html#geometry" aria-label="Back to Math Adventure Hub">← 🏠 Hub</a>
+        <div class="brand">
+            <h1>📏 Angle Measurement Lab</h1>
+            <p>Line up a real protractor, make a prediction, then reveal the answer.</p>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="mission" aria-label="Angle lab mission">
+            <span class="mission-emoji" aria-hidden="true">🕵️</span>
+            <div>
+                <strong>Measure before you reveal!</strong>
+                <p>Drag the protractor's centre onto point B, rotate its baseline onto one arm, read the scale, and enter your answer.</p>
+            </div>
+        </section>
+
+        <div class="lab-grid">
+            <section class="panel stage-panel" aria-label="Angle measurement workspace">
+                <div class="stage-top">
+                    <div class="stage-title">Measure <span>∠ABC</span></div>
+                    <div class="stage-actions">
+                        <button id="gridToggle" class="small-btn" type="button" aria-pressed="true"># Grid</button>
+                        <button id="protractorToggle" class="small-btn" type="button" aria-pressed="true">📏 Hide protractor</button>
+                        <button id="resetProtractor" class="small-btn" type="button">↺ Reset tool</button>
+                    </div>
+                </div>
+
+                <svg id="angleStage" viewBox="0 0 1000 650" role="application" aria-label="Interactive random angle and draggable protractor" tabindex="0">
+                    <defs>
+                        <pattern id="angleSmallGrid" width="25" height="25" patternUnits="userSpaceOnUse">
+                            <path d="M25 0 L0 0 0 25" fill="none" stroke="#dfeaf3" stroke-width="1"/>
+                        </pattern>
+                        <pattern id="angleLargeGrid" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#angleSmallGrid)"/>
+                            <path d="M100 0 L0 0 0 100" fill="none" stroke="#bfd2e1" stroke-width="1.6"/>
+                        </pattern>
+                        <marker id="angleArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                            <path d="M0 0 L12 6 L0 12 z" fill="#26324a"/>
+                        </marker>
+                        <filter id="toolShadow" x="-30%" y="-30%" width="160%" height="170%">
+                            <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#26324a" flood-opacity=".23"/>
+                        </filter>
+                    </defs>
+                    <rect id="stageBackground" width="1000" height="650" fill="url(#angleLargeGrid)"/>
+
+                    <g id="angleDrawing" pointer-events="none">
+                        <path id="angleSector" fill="rgba(255,107,107,.2)" stroke="#ff6b6b" stroke-width="4"/>
+                        <line id="baseRay" stroke="#26324a" stroke-width="7" stroke-linecap="round" marker-end="url(#angleArrow)"/>
+                        <line id="turnRay" stroke="#26324a" stroke-width="7" stroke-linecap="round" marker-end="url(#angleArrow)"/>
+                        <circle id="angleVertex" r="10" fill="#ff6b6b" stroke="#fff" stroke-width="4"/>
+                        <text id="labelA" font-family="Quicksand, sans-serif" font-size="25" font-weight="800" fill="#26324a" paint-order="stroke" stroke="#fff" stroke-width="6">A</text>
+                        <text id="labelB" font-family="Quicksand, sans-serif" font-size="25" font-weight="800" fill="#26324a" paint-order="stroke" stroke="#fff" stroke-width="6">B</text>
+                        <text id="labelC" font-family="Quicksand, sans-serif" font-size="25" font-weight="800" fill="#26324a" paint-order="stroke" stroke="#fff" stroke-width="6">C</text>
+                    </g>
+
+                    <g id="protractorGroup" filter="url(#toolShadow)" aria-label="Draggable protractor">
+                        <path data-drag-tool="true" d="M-235 0 A235 235 0 0 1 235 0 L-235 0 Z" fill="rgba(220, 252, 250, .78)" stroke="#168d86" stroke-width="5"/>
+                        <path data-drag-tool="true" d="M-45 0 A45 45 0 0 1 45 0" fill="none" stroke="#168d86" stroke-width="3"/>
+                        <g id="protractorTicks" data-drag-tool="true"></g>
+                        <line x1="-235" y1="0" x2="235" y2="0" stroke="#168d86" stroke-width="5" stroke-linecap="round" data-drag-tool="true"/>
+                        <circle cx="0" cy="0" r="12" fill="#fff" stroke="#ff6b6b" stroke-width="4" data-drag-tool="true"/>
+                        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ff6b6b" stroke-width="2.5" data-drag-tool="true"/>
+                        <line x1="0" y1="-22" x2="0" y2="20" stroke="#ff6b6b" stroke-width="2.5" data-drag-tool="true"/>
+                        <g class="rotate-handle" data-rotate-tool="true" transform="translate(0,-277)">
+                            <circle r="26" fill="#8c6ce9" stroke="#fff" stroke-width="4" data-rotate-tool="true"/>
+                            <text x="0" y="9" text-anchor="middle" fill="#fff" font-size="29" font-weight="800" data-rotate-tool="true">↻</text>
+                        </g>
+                        <text x="0" y="-28" text-anchor="middle" fill="#168d86" font-size="15" font-weight="800" font-family="Quicksand, sans-serif" data-drag-tool="true">DRAG CENTRE TO B</text>
+                    </g>
+                </svg>
+            </section>
+
+            <aside class="panel control-panel" aria-label="Angle challenge controls">
+                <h2>Single angle challenge</h2>
+                <p class="eyebrow">The answers stay hidden until you choose to reveal them.</p>
+
+                <button id="measureReveal" class="reveal-btn" type="button" data-revealed="false" aria-expanded="false">
+                    <span class="reveal-eye" aria-hidden="true">👁️</span>
+                    <span class="reveal-label">Angle measure</span>
+                    <strong id="measureValue" class="reveal-value">?</strong>
+                </button>
+
+                <button id="typeReveal" class="reveal-btn" type="button" data-revealed="false" aria-expanded="false">
+                    <span class="reveal-eye" aria-hidden="true">👁️</span>
+                    <span class="reveal-label">Angle type</span>
+                    <strong id="typeValue" class="reveal-value">?</strong>
+                </button>
+
+                <div class="challenge-box">
+                    <label for="angleRange">Challenge range</label>
+                    <select id="angleRange">
+                        <option value="standard">Standard: 10°–170°</option>
+                        <option value="mixed" selected>Mixed: 10°–350°</option>
+                        <option value="reflex">Reflex: 190°–350°</option>
+                    </select>
+                </div>
+
+                <button id="newAngleBtn" class="new-angle-btn" type="button">🎲 Generate a new angle</button>
+
+                <div class="guess-box">
+                    <h3>Your measurement</h3>
+                    <div class="guess-row">
+                        <label class="sr-only" for="guessInput">Angle in degrees</label>
+                        <input id="guessInput" type="number" min="1" max="359" step="1" inputmode="numeric" placeholder="e.g. 65">
+                        <button id="checkGuess" class="check-btn" type="button">Check</button>
+                    </div>
+                    <p id="feedback" class="feedback" aria-live="polite"></p>
+                </div>
+
+                <div class="tip-card">
+                    <h3>Protractor controls</h3>
+                    <p>Drag anywhere on the protractor to move it. Drag the purple ↻ handle to rotate it. For a reflex angle, measure the smaller turn and subtract it from 360°.</p>
+                    <div class="scale-key">
+                        <span><i class="dot" style="background:#168d86"></i>Outer scale</span>
+                        <span><i class="dot" style="background:#7656d8"></i>Inner scale</span>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const SVG_NS = "http://www.w3.org/2000/svg";
+            const STAGE = { width: 1000, height: 650 };
+            const vertex = { x: 570, y: 345 };
+            const state = {
+                angle: 65,
+                base: 0,
+                showGrid: true,
+                showProtractor: true,
+                protractor: { x: 280, y: 600, rotation: 0 },
+                interaction: null
+            };
+
+            const stage = document.getElementById("angleStage");
+            const protractorGroup = document.getElementById("protractorGroup");
+            const measureReveal = document.getElementById("measureReveal");
+            const typeReveal = document.getElementById("typeReveal");
+            const measureValue = document.getElementById("measureValue");
+            const typeValue = document.getElementById("typeValue");
+            const feedback = document.getElementById("feedback");
+            const guessInput = document.getElementById("guessInput");
+
+            function svgElement(name, attributes = {}) {
+                const element = document.createElementNS(SVG_NS, name);
+                Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+                return element;
+            }
+
+            function polar(origin, radius, degrees) {
+                const radians = degrees * Math.PI / 180;
+                return {
+                    x: origin.x + radius * Math.cos(radians),
+                    y: origin.y - radius * Math.sin(radians)
+                };
+            }
+
+            function rayToEdge(origin, degrees, padding = 22) {
+                const radians = degrees * Math.PI / 180;
+                const dx = Math.cos(radians);
+                const dy = -Math.sin(radians);
+                const candidates = [];
+                if (dx > .0001) candidates.push((STAGE.width - padding - origin.x) / dx);
+                if (dx < -.0001) candidates.push((padding - origin.x) / dx);
+                if (dy > .0001) candidates.push((STAGE.height - padding - origin.y) / dy);
+                if (dy < -.0001) candidates.push((padding - origin.y) / dy);
+                const distance = Math.min(...candidates.filter(value => value > 0));
+                return { x: origin.x + dx * distance, y: origin.y + dy * distance };
+            }
+
+            function stagePoint(event) {
+                const point = stage.createSVGPoint();
+                point.x = event.clientX;
+                point.y = event.clientY;
+                return point.matrixTransform(stage.getScreenCTM().inverse());
+            }
+
+            function angleType(angle) {
+                if (angle < 90) return "Acute";
+                if (angle === 90) return "Right";
+                if (angle < 180) return "Obtuse";
+                if (angle === 180) return "Straight";
+                return "Reflex";
+            }
+
+            function createTicks() {
+                const tickGroup = document.getElementById("protractorTicks");
+                for (let angle = 0; angle <= 180; angle += 5) {
+                    const radians = angle * Math.PI / 180;
+                    const outer = 225;
+                    const tickLength = angle % 10 === 0 ? 17 : 10;
+                    const inner = outer - tickLength;
+                    const x1 = Math.cos(radians) * outer;
+                    const y1 = -Math.sin(radians) * outer;
+                    const x2 = Math.cos(radians) * inner;
+                    const y2 = -Math.sin(radians) * inner;
+                    tickGroup.appendChild(svgElement("line", {
+                        x1, y1, x2, y2,
+                        stroke: angle % 10 === 0 ? "#168d86" : "#438f9a",
+                        "stroke-width": angle % 10 === 0 ? "2.3" : "1.2"
+                    }));
+
+                    if (angle % 30 === 0) {
+                        const labelRadius = 194;
+                        const label = svgElement("text", {
+                            x: Math.cos(radians) * labelRadius,
+                            y: -Math.sin(radians) * labelRadius + 5,
+                            "text-anchor": "middle",
+                            fill: "#08756f",
+                            "font-size": "15",
+                            "font-weight": "800",
+                            "font-family": "Quicksand, sans-serif"
+                        });
+                        label.textContent = String(angle);
+                        tickGroup.appendChild(label);
+
+                        const innerLabelRadius = 164;
+                        const innerLabel = svgElement("text", {
+                            x: Math.cos(radians) * innerLabelRadius,
+                            y: -Math.sin(radians) * innerLabelRadius + 5,
+                            "text-anchor": "middle",
+                            fill: "#7656d8",
+                            "font-size": "13",
+                            "font-weight": "800",
+                            "font-family": "Quicksand, sans-serif"
+                        });
+                        innerLabel.textContent = String(180 - angle);
+                        tickGroup.appendChild(innerLabel);
+                    }
+                }
+            }
+
+            function updateAngleDrawing() {
+                const baseEnd = rayToEdge(vertex, state.base);
+                const turnEnd = rayToEdge(vertex, state.base + state.angle);
+                const baseShort = polar(vertex, 205, state.base);
+                const turnShort = polar(vertex, 205, state.base + state.angle);
+
+                const baseRay = document.getElementById("baseRay");
+                const turnRay = document.getElementById("turnRay");
+                [baseRay, turnRay].forEach(ray => {
+                    ray.setAttribute("x1", vertex.x);
+                    ray.setAttribute("y1", vertex.y);
+                });
+                baseRay.setAttribute("x2", baseEnd.x);
+                baseRay.setAttribute("y2", baseEnd.y);
+                turnRay.setAttribute("x2", turnEnd.x);
+                turnRay.setAttribute("y2", turnEnd.y);
+
+                const arcRadius = state.angle > 180 ? 98 : 82;
+                const arcStart = polar(vertex, arcRadius, state.base);
+                const arcEnd = polar(vertex, arcRadius, state.base + state.angle);
+                const largeArc = state.angle > 180 ? 1 : 0;
+                document.getElementById("angleSector").setAttribute(
+                    "d",
+                    `M ${vertex.x} ${vertex.y} L ${arcStart.x} ${arcStart.y} A ${arcRadius} ${arcRadius} 0 ${largeArc} 0 ${arcEnd.x} ${arcEnd.y} Z`
+                );
+
+                const vertexCircle = document.getElementById("angleVertex");
+                vertexCircle.setAttribute("cx", vertex.x);
+                vertexCircle.setAttribute("cy", vertex.y);
+
+                const labels = [
+                    ["labelA", baseShort.x + 9, baseShort.y - 9],
+                    ["labelB", vertex.x + 16, vertex.y + 30],
+                    ["labelC", turnShort.x + 9, turnShort.y - 9]
+                ];
+                labels.forEach(([id, x, y]) => {
+                    document.getElementById(id).setAttribute("x", x);
+                    document.getElementById(id).setAttribute("y", y);
+                });
+            }
+
+            function updateProtractor() {
+                const { x, y, rotation } = state.protractor;
+                protractorGroup.setAttribute("transform", `translate(${x} ${y}) rotate(${rotation})`);
+                protractorGroup.style.display = state.showProtractor ? "block" : "none";
+            }
+
+            function hideAnswers() {
+                [measureReveal, typeReveal].forEach(button => {
+                    button.dataset.revealed = "false";
+                    button.setAttribute("aria-expanded", "false");
+                });
+                measureValue.textContent = "?";
+                typeValue.textContent = "?";
+            }
+
+            function resetProtractorPosition() {
+                state.protractor = { x: 280, y: 600, rotation: 0 };
+                updateProtractor();
+            }
+
+            function chooseAngle() {
+                const mode = document.getElementById("angleRange").value;
+                let min = 10;
+                let max = 350;
+                if (mode === "standard") max = 170;
+                if (mode === "reflex") min = 190;
+                const values = [];
+                for (let value = min; value <= max; value += 5) {
+                    if (value !== 180) values.push(value);
+                }
+                if (mode !== "reflex" && Math.random() < .09) return 90;
+                return values[Math.floor(Math.random() * values.length)];
+            }
+
+            function newChallenge() {
+                state.angle = chooseAngle();
+                state.base = Math.floor(Math.random() * 36) * 10;
+                hideAnswers();
+                guessInput.value = "";
+                feedback.textContent = "";
+                feedback.className = "feedback";
+                resetProtractorPosition();
+                updateAngleDrawing();
+                guessInput.focus({ preventScroll: true });
+            }
+
+            function toggleReveal(button, valueElement, value) {
+                const revealing = button.dataset.revealed !== "true";
+                button.dataset.revealed = String(revealing);
+                button.setAttribute("aria-expanded", String(revealing));
+                valueElement.textContent = revealing ? value : "?";
+            }
+
+            measureReveal.addEventListener("click", () => toggleReveal(measureReveal, measureValue, `${state.angle}°`));
+            typeReveal.addEventListener("click", () => toggleReveal(typeReveal, typeValue, angleType(state.angle)));
+            document.getElementById("newAngleBtn").addEventListener("click", newChallenge);
+
+            document.getElementById("checkGuess").addEventListener("click", () => {
+                const guess = Number(guessInput.value);
+                if (!Number.isFinite(guess) || guessInput.value.trim() === "") {
+                    feedback.textContent = "Enter an angle first.";
+                    feedback.className = "feedback try";
+                    return;
+                }
+                const difference = Math.abs(guess - state.angle);
+                if (difference <= 1) {
+                    feedback.textContent = "🎉 Spot on! Excellent measuring.";
+                    feedback.className = "feedback good";
+                } else if (difference <= 5) {
+                    feedback.textContent = "Very close—check which scale starts at 0°.";
+                    feedback.className = "feedback try";
+                } else {
+                    feedback.textContent = guess < state.angle ? "The angle is larger than that. Try again." : "The angle is smaller than that. Try again.";
+                    feedback.className = "feedback try";
+                }
+            });
+            guessInput.addEventListener("keydown", event => {
+                if (event.key === "Enter") document.getElementById("checkGuess").click();
+            });
+
+            document.getElementById("gridToggle").addEventListener("click", event => {
+                state.showGrid = !state.showGrid;
+                event.currentTarget.setAttribute("aria-pressed", String(state.showGrid));
+                document.getElementById("stageBackground").setAttribute("fill", state.showGrid ? "url(#angleLargeGrid)" : "#ffffff");
+            });
+
+            document.getElementById("protractorToggle").addEventListener("click", event => {
+                state.showProtractor = !state.showProtractor;
+                event.currentTarget.setAttribute("aria-pressed", String(state.showProtractor));
+                event.currentTarget.textContent = state.showProtractor ? "📏 Hide protractor" : "📏 Show protractor";
+                updateProtractor();
+            });
+            document.getElementById("resetProtractor").addEventListener("click", resetProtractorPosition);
+
+            protractorGroup.addEventListener("pointerdown", event => {
+                event.preventDefault();
+                const point = stagePoint(event);
+                const rotating = Boolean(event.target.closest("[data-rotate-tool]"));
+                state.interaction = rotating ? {
+                    mode: "rotate",
+                    pointerId: event.pointerId
+                } : {
+                    mode: "drag",
+                    pointerId: event.pointerId,
+                    offsetX: point.x - state.protractor.x,
+                    offsetY: point.y - state.protractor.y
+                };
+                stage.setPointerCapture(event.pointerId);
+                protractorGroup.classList.add("dragging");
+            });
+
+            stage.addEventListener("pointermove", event => {
+                if (!state.interaction || event.pointerId !== state.interaction.pointerId) return;
+                const point = stagePoint(event);
+                if (state.interaction.mode === "drag") {
+                    state.protractor.x = Math.max(35, Math.min(STAGE.width - 35, point.x - state.interaction.offsetX));
+                    state.protractor.y = Math.max(35, Math.min(STAGE.height - 18, point.y - state.interaction.offsetY));
+                } else {
+                    const radians = Math.atan2(point.y - state.protractor.y, point.x - state.protractor.x);
+                    state.protractor.rotation = radians * 180 / Math.PI + 90;
+                }
+                updateProtractor();
+            });
+
+            function endInteraction(event) {
+                if (!state.interaction || event.pointerId !== state.interaction.pointerId) return;
+                state.interaction = null;
+                protractorGroup.classList.remove("dragging");
+            }
+            stage.addEventListener("pointerup", endInteraction);
+            stage.addEventListener("pointercancel", endInteraction);
+
+            document.addEventListener("keydown", event => {
+                if (event.key.toLowerCase() === "n" && !event.ctrlKey && !event.metaKey && document.activeElement !== guessInput) newChallenge();
+            });
+
+            createTicks();
+            newChallenge();
+        })();
+    </script>
+</body>
+</html>

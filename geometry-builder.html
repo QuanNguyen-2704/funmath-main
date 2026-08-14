@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Builder | Math Adventure Hub</title>
+    <meta name="description" content="Plot points and construct segments, lines, rays and polygons on an interactive geometry board.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #26324a;
+            --muted: #667085;
+            --paper: #ffffff;
+            --sky: #eaf7ff;
+            --teal: #33b8ae;
+            --teal-dark: #168d86;
+            --purple: #8465e8;
+            --purple-dark: #6646c9;
+            --coral: #ff6b6b;
+            --yellow: #ffd93d;
+            --green: #52b96b;
+            --line: #d9e4ef;
+            --shadow: 0 14px 35px rgba(39, 53, 84, .13);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { min-height: 100%; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Quicksand", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 8% 8%, rgba(255, 217, 61, .28), transparent 22rem),
+                radial-gradient(circle at 92% 88%, rgba(51, 184, 174, .24), transparent 25rem),
+                linear-gradient(150deg, #f5fbff, #f6f1ff);
+        }
+
+        button, input { font: inherit; }
+        button { color: inherit; }
+
+        .topbar {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding: 12px clamp(16px, 3vw, 42px);
+            color: white;
+            background: linear-gradient(120deg, var(--teal-dark), var(--purple-dark));
+            box-shadow: 0 6px 20px rgba(45, 49, 66, .17);
+        }
+
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+            padding: 9px 14px;
+            border: 2px solid rgba(255,255,255,.56);
+            border-radius: 999px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            background: rgba(255,255,255,.12);
+        }
+
+        .brand { min-width: 0; flex: 1; }
+        .brand h1 {
+            margin: 0;
+            font: 800 clamp(1.35rem, 3vw, 2rem)/1 "Baloo 2", sans-serif;
+        }
+        .brand p { margin: 3px 0 0; color: rgba(255,255,255,.86); font-size: .92rem; }
+
+        .top-actions { display: flex; gap: 9px; }
+        .top-action {
+            border: 0;
+            border-radius: 13px;
+            padding: 10px 15px;
+            color: var(--ink);
+            background: white;
+            font-weight: 800;
+            box-shadow: 0 4px 0 rgba(25, 31, 54, .2);
+            cursor: pointer;
+        }
+        .top-action:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(25,31,54,.2); }
+        .top-action:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+        .top-action.danger { color: #b12e3c; }
+
+        .page { max-width: 1540px; margin: 0 auto; padding: 22px clamp(12px, 2.5vw, 34px) 38px; }
+
+        .mission {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border: 2px solid rgba(132, 101, 232, .17);
+            border-radius: 18px;
+            background: rgba(255,255,255,.82);
+            box-shadow: 0 6px 18px rgba(45,49,66,.07);
+        }
+        .mission-emoji { font-size: 2rem; }
+        .mission strong { font-family: "Baloo 2", sans-serif; font-size: 1.1rem; }
+        .mission p { margin: 1px 0 0; color: var(--muted); }
+
+        .workbench {
+            display: grid;
+            grid-template-columns: 190px minmax(0, 1fr) 235px;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .panel {
+            border: 2px solid rgba(124, 144, 177, .18);
+            border-radius: 24px;
+            background: rgba(255,255,255,.94);
+            box-shadow: var(--shadow);
+        }
+
+        .toolbox, .coach { padding: 16px; }
+        .panel-title {
+            margin: 0 0 12px;
+            font: 800 1.15rem/1.1 "Baloo 2", sans-serif;
+        }
+
+        .tool-list { display: grid; gap: 9px; }
+        .tool-btn {
+            width: 100%;
+            min-height: 52px;
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            align-items: center;
+            gap: 9px;
+            padding: 7px 10px;
+            border: 2px solid #dce6f0;
+            border-radius: 15px;
+            background: white;
+            text-align: left;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform .15s ease, border-color .15s ease, background .15s ease;
+        }
+        .tool-btn:hover { transform: translateX(3px); border-color: var(--teal); }
+        .tool-btn[aria-pressed="true"] {
+            color: white;
+            border-color: var(--purple-dark);
+            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+            box-shadow: 0 4px 0 #4e34a0;
+        }
+        .tool-icon {
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            border-radius: 11px;
+            color: var(--ink);
+            background: #eef6ff;
+            font: 800 1.25rem/1 "Baloo 2", sans-serif;
+        }
+        .tool-btn[aria-pressed="true"] .tool-icon { background: rgba(255,255,255,.9); }
+
+        .mode-help {
+            margin-top: 14px;
+            padding: 12px;
+            border-radius: 15px;
+            color: #5d4b18;
+            background: #fff7cf;
+            font-size: .88rem;
+            font-weight: 700;
+            line-height: 1.45;
+        }
+
+        .canvas-panel { min-width: 0; overflow: hidden; }
+        .canvas-top {
+            min-height: 54px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 13px;
+            border-bottom: 2px solid #e7edf4;
+        }
+        .status {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .status strong { color: var(--ink); }
+        .view-actions { display: flex; gap: 7px; flex-wrap: wrap; justify-content: flex-end; }
+        .chip {
+            border: 2px solid #dbe5ef;
+            border-radius: 999px;
+            padding: 7px 11px;
+            background: #fff;
+            font-size: .83rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .chip[aria-pressed="true"] { border-color: #85d8d1; background: #e6fbf8; color: #08756f; }
+
+        .board-wrap { position: relative; background: #f8fbff; }
+        #geometryBoard {
+            width: 100%;
+            min-height: 520px;
+            display: block;
+            background: #fff;
+            touch-action: none;
+            cursor: crosshair;
+            user-select: none;
+        }
+        #geometryBoard[data-tool="move"] { cursor: default; }
+        #geometryBoard .point-hit { cursor: pointer; }
+        #geometryBoard[data-tool="move"] .point-hit { cursor: grab; }
+        #geometryBoard.dragging .point-hit { cursor: grabbing; }
+        .drawing-layer { pointer-events: none; }
+
+        .finish-bar {
+            position: absolute;
+            left: 50%;
+            bottom: 14px;
+            transform: translateX(-50%);
+            display: none;
+            gap: 9px;
+            padding: 9px;
+            border-radius: 16px;
+            background: rgba(38, 50, 74, .9);
+            box-shadow: 0 8px 25px rgba(38,50,74,.25);
+        }
+        .finish-bar.show { display: flex; }
+        .finish-btn {
+            border: 0;
+            border-radius: 11px;
+            padding: 9px 13px;
+            background: white;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .finish-btn.primary { color: white; background: var(--green); }
+        .finish-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+        .coach-card {
+            margin-bottom: 13px;
+            padding: 13px;
+            border-radius: 17px;
+            background: #f2f7ff;
+        }
+        .coach-card:last-child { margin-bottom: 0; }
+        .coach-card.purple { background: #f3efff; }
+        .coach-card.green { background: #eaf9ee; }
+        .coach-card h3 { margin: 0 0 5px; font: 800 1rem/1.2 "Baloo 2", sans-serif; }
+        .coach-card p, .coach-card ol { margin: 0; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+        .coach-card ol { padding-left: 19px; }
+        .object-counts { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 9px; }
+        .count {
+            padding: 8px 4px;
+            border-radius: 11px;
+            background: rgba(255,255,255,.82);
+            text-align: center;
+            font-weight: 800;
+            font-size: .78rem;
+        }
+        .count span { display: block; color: var(--purple-dark); font: 800 1.2rem/1 "Baloo 2", sans-serif; }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        :focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+
+        @media (max-width: 1100px) {
+            .workbench { grid-template-columns: 175px minmax(0, 1fr); }
+            .coach { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .coach .panel-title { grid-column: 1 / -1; margin-bottom: 0; }
+            .coach-card { margin: 0; }
+        }
+        @media (max-width: 720px) {
+            .topbar { align-items: flex-start; flex-wrap: wrap; }
+            .brand { order: -1; flex-basis: calc(100% - 100px); }
+            .brand p { display: none; }
+            .top-actions { margin-left: auto; }
+            .workbench { grid-template-columns: 1fr; }
+            .toolbox { padding: 12px; }
+            .tool-list { grid-template-columns: repeat(3, 1fr); }
+            .tool-btn { grid-template-columns: 1fr; justify-items: center; text-align: center; min-height: 72px; padding: 7px 4px; font-size: .78rem; }
+            .mode-help { margin-top: 10px; }
+            #geometryBoard { min-height: 430px; }
+            .coach { grid-column: auto; grid-template-columns: 1fr; }
+            .canvas-top { align-items: flex-start; flex-direction: column; }
+            .view-actions { justify-content: flex-start; }
+        }
+        @media (max-width: 460px) {
+            .home-link { padding: 8px 10px; font-size: .82rem; }
+            .top-action { padding: 9px 11px; font-size: .82rem; }
+            .mission { align-items: flex-start; }
+            .mission p { font-size: .86rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="home-link" href="index.html#geometry" aria-label="Back to Math Adventure Hub">← 🏠 Hub</a>
+        <div class="brand">
+            <h1>📐 Geometry Builder</h1>
+            <p>Plot points, connect them, and watch your constructions stay linked.</p>
+        </div>
+        <div class="top-actions" aria-label="Drawing actions">
+            <button id="undoBtn" class="top-action" type="button" disabled>↶ Undo</button>
+            <button id="clearBtn" class="top-action danger" type="button">Clear</button>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="mission" aria-label="Today's mission">
+            <span class="mission-emoji" aria-hidden="true">🧭</span>
+            <div>
+                <strong>Construction mission</strong>
+                <p>Create four points, join a segment and a ray, then build a polygon. Switch to Move and drag a vertex to see every linked object follow.</p>
+            </div>
+        </section>
+
+        <div class="workbench">
+            <aside class="panel toolbox" aria-label="Geometry tools">
+                <h2 class="panel-title">Choose a tool</h2>
+                <div class="tool-list" role="toolbar" aria-label="Drawing tools">
+                    <button class="tool-btn" type="button" data-tool="move" aria-pressed="false"><span class="tool-icon">☝</span><span>Move</span></button>
+                    <button class="tool-btn" type="button" data-tool="point" aria-pressed="true"><span class="tool-icon">•A</span><span>Point</span></button>
+                    <button class="tool-btn" type="button" data-tool="segment" aria-pressed="false"><span class="tool-icon">—</span><span>Segment</span></button>
+                    <button class="tool-btn" type="button" data-tool="line" aria-pressed="false"><span class="tool-icon">↔</span><span>Line</span></button>
+                    <button class="tool-btn" type="button" data-tool="ray" aria-pressed="false"><span class="tool-icon">→</span><span>Ray</span></button>
+                    <button class="tool-btn" type="button" data-tool="polygon" aria-pressed="false"><span class="tool-icon">△</span><span>Polygon</span></button>
+                </div>
+                <div id="modeHelp" class="mode-help">Click anywhere on the board to plot a labelled point.</div>
+            </aside>
+
+            <section class="panel canvas-panel" aria-label="Geometry drawing board">
+                <div class="canvas-top">
+                    <div id="statusText" class="status" aria-live="polite"><strong>Point tool:</strong> click the board.</div>
+                    <div class="view-actions">
+                        <button id="gridBtn" class="chip" type="button" aria-pressed="true"># Grid</button>
+                        <button id="snapBtn" class="chip" type="button" aria-pressed="false">🧲 Snap</button>
+                    </div>
+                </div>
+                <div class="board-wrap">
+                    <svg id="geometryBoard" viewBox="0 0 1000 650" role="application" aria-label="Interactive geometry board. Choose a tool and click to draw." tabindex="0" data-tool="point">
+                        <defs>
+                            <pattern id="smallGrid" width="25" height="25" patternUnits="userSpaceOnUse">
+                                <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#dce8f2" stroke-width="1"/>
+                            </pattern>
+                            <pattern id="largeGrid" width="100" height="100" patternUnits="userSpaceOnUse">
+                                <rect width="100" height="100" fill="url(#smallGrid)"/>
+                                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#bdd0df" stroke-width="1.6"/>
+                            </pattern>
+                            <marker id="rayArrow" markerWidth="18" markerHeight="18" refX="16" refY="9" orient="auto" markerUnits="userSpaceOnUse">
+                                <path d="M 0 0 L 18 9 L 0 18 z" fill="#e14e56"/>
+                            </marker>
+                            <filter id="pointShadow" x="-60%" y="-60%" width="220%" height="220%">
+                                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#273554" flood-opacity=".25"/>
+                            </filter>
+                        </defs>
+                        <rect id="boardBackground" width="1000" height="650" fill="url(#largeGrid)"/>
+                        <g id="polygonLayer" class="drawing-layer"></g>
+                        <g id="lineLayer" class="drawing-layer"></g>
+                        <g id="segmentLayer" class="drawing-layer"></g>
+                        <g id="rayLayer" class="drawing-layer"></g>
+                        <g id="previewLayer" class="drawing-layer"></g>
+                        <g id="pointLayer"></g>
+                    </svg>
+                    <div id="finishBar" class="finish-bar" aria-label="Polygon actions">
+                        <button id="finishPolygonBtn" class="finish-btn primary" type="button" disabled>✓ Finish polygon</button>
+                        <button id="cancelConstructionBtn" class="finish-btn" type="button">Cancel</button>
+                    </div>
+                </div>
+            </section>
+
+            <aside class="panel coach" aria-label="Geometry guide">
+                <h2 class="panel-title">Explorer guide</h2>
+                <section class="coach-card">
+                    <h3>How it works</h3>
+                    <ol>
+                        <li>Choose an object.</li>
+                        <li>Click existing points or empty space.</li>
+                        <li>Drag points with Move.</li>
+                    </ol>
+                </section>
+                <section class="coach-card purple">
+                    <h3>Your objects</h3>
+                    <div class="object-counts" aria-live="polite">
+                        <div class="count"><span id="pointCount">0</span>Points</div>
+                        <div class="count"><span id="segmentCount">0</span>Segments</div>
+                        <div class="count"><span id="lineCount">0</span>Lines</div>
+                        <div class="count"><span id="rayCount">0</span>Rays</div>
+                        <div class="count"><span id="polygonCount">0</span>Polygons</div>
+                    </div>
+                </section>
+                <section class="coach-card green">
+                    <h3>Try this</h3>
+                    <p>Can you make a quadrilateral with one pair of parallel sides? Move one vertex until it becomes a trapezoid.</p>
+                </section>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        (() => {
+            "use strict";
+
+            const SVG_NS = "http://www.w3.org/2000/svg";
+            const BOARD = { width: 1000, height: 650 };
+            const state = {
+                tool: "point",
+                points: [],
+                objects: [],
+                nextPoint: 0,
+                nextObject: 0,
+                pending: [],
+                draftSnapshot: null,
+                pointer: null,
+                history: [],
+                snap: false,
+                showGrid: true,
+                drag: null
+            };
+
+            const board = document.getElementById("geometryBoard");
+            const pointLayer = document.getElementById("pointLayer");
+            const segmentLayer = document.getElementById("segmentLayer");
+            const lineLayer = document.getElementById("lineLayer");
+            const rayLayer = document.getElementById("rayLayer");
+            const polygonLayer = document.getElementById("polygonLayer");
+            const previewLayer = document.getElementById("previewLayer");
+            const finishBar = document.getElementById("finishBar");
+            const finishPolygonBtn = document.getElementById("finishPolygonBtn");
+            const undoBtn = document.getElementById("undoBtn");
+            const statusText = document.getElementById("statusText");
+            const modeHelp = document.getElementById("modeHelp");
+
+            const help = {
+                move: ["Drag any point. Every connected object will follow it.", "<strong>Move tool:</strong> drag a labelled point."],
+                point: ["Click anywhere on the board to plot a labelled point.", "<strong>Point tool:</strong> click the board."],
+                segment: ["Choose two points. Clicking empty space creates a new point for you.", "<strong>Segment:</strong> choose the first endpoint."],
+                line: ["Choose two points to draw a line that continues forever in both directions.", "<strong>Line:</strong> choose the first point."],
+                ray: ["Choose the endpoint first, then a second point to set the direction.", "<strong>Ray:</strong> choose its endpoint."],
+                polygon: ["Choose at least three vertices. Click the first one again or press Finish.", "<strong>Polygon:</strong> choose the first vertex."]
+            };
+
+            function snapshot() {
+                return JSON.stringify({
+                    points: state.points,
+                    objects: state.objects,
+                    nextPoint: state.nextPoint,
+                    nextObject: state.nextObject
+                });
+            }
+
+            function restore(serialized) {
+                const saved = JSON.parse(serialized);
+                state.points = saved.points;
+                state.objects = saved.objects;
+                state.nextPoint = saved.nextPoint;
+                state.nextObject = saved.nextObject;
+                state.pending = [];
+                state.draftSnapshot = null;
+                state.pointer = null;
+                render();
+            }
+
+            function remember(serialized = snapshot()) {
+                state.history.push(serialized);
+                if (state.history.length > 80) state.history.shift();
+                undoBtn.disabled = false;
+            }
+
+            function svgElement(name, attributes = {}) {
+                const el = document.createElementNS(SVG_NS, name);
+                Object.entries(attributes).forEach(([key, value]) => el.setAttribute(key, value));
+                return el;
+            }
+
+            function pointLabel(index) {
+                const letter = String.fromCharCode(65 + (index % 26));
+                const cycle = Math.floor(index / 26);
+                return cycle ? `${letter}${cycle}` : letter;
+            }
+
+            function addPoint(x, y) {
+                const point = {
+                    id: `p${state.nextPoint}`,
+                    x: clamp(x, 14, BOARD.width - 14),
+                    y: clamp(y, 14, BOARD.height - 14),
+                    label: pointLabel(state.nextPoint)
+                };
+                state.nextPoint += 1;
+                state.points.push(point);
+                return point;
+            }
+
+            function getPoint(id) {
+                return state.points.find(point => point.id === id);
+            }
+
+            function nearestPoint(x, y, radius = 20) {
+                let best = null;
+                let bestDistance = radius;
+                state.points.forEach(point => {
+                    const distance = Math.hypot(point.x - x, point.y - y);
+                    if (distance <= bestDistance) {
+                        best = point;
+                        bestDistance = distance;
+                    }
+                });
+                return best;
+            }
+
+            function getOrCreatePoint(x, y) {
+                return nearestPoint(x, y) || addPoint(x, y);
+            }
+
+            function addObject(type, pointIds) {
+                state.objects.push({ id: `o${state.nextObject++}`, type, points: pointIds.slice() });
+            }
+
+            function clamp(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
+            function screenToBoard(event) {
+                const point = board.createSVGPoint();
+                point.x = event.clientX;
+                point.y = event.clientY;
+                const transformed = point.matrixTransform(board.getScreenCTM().inverse());
+                let x = transformed.x;
+                let y = transformed.y;
+                if (state.snap) {
+                    x = Math.round(x / 25) * 25;
+                    y = Math.round(y / 25) * 25;
+                }
+                return { x: clamp(x, 0, BOARD.width), y: clamp(y, 0, BOARD.height) };
+            }
+
+            function uniqueIntersections(intersections) {
+                return intersections.filter((point, index, all) => all.findIndex(other => Math.hypot(other.x - point.x, other.y - point.y) < .5) === index);
+            }
+
+            function clippedLine(a, b) {
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                if (Math.hypot(dx, dy) < .01) return [a, b];
+                const hits = [];
+                if (Math.abs(dx) > .0001) {
+                    [0, BOARD.width].forEach(x => {
+                        const t = (x - a.x) / dx;
+                        const y = a.y + t * dy;
+                        if (y >= 0 && y <= BOARD.height) hits.push({ x, y, t });
+                    });
+                }
+                if (Math.abs(dy) > .0001) {
+                    [0, BOARD.height].forEach(y => {
+                        const t = (y - a.y) / dy;
+                        const x = a.x + t * dx;
+                        if (x >= 0 && x <= BOARD.width) hits.push({ x, y, t });
+                    });
+                }
+                const unique = uniqueIntersections(hits).sort((p, q) => p.t - q.t);
+                return unique.length >= 2 ? [unique[0], unique[unique.length - 1]] : [a, b];
+            }
+
+            function clippedRay(a, b) {
+                const dx = b.x - a.x;
+                const dy = b.y - a.y;
+                if (Math.hypot(dx, dy) < .01) return [a, b];
+                const positive = [];
+                if (dx > .0001) positive.push((BOARD.width - a.x) / dx);
+                if (dx < -.0001) positive.push((0 - a.x) / dx);
+                if (dy > .0001) positive.push((BOARD.height - a.y) / dy);
+                if (dy < -.0001) positive.push((0 - a.y) / dy);
+                const t = Math.min(...positive.filter(value => value > 0));
+                return [a, { x: a.x + dx * t, y: a.y + dy * t }];
+            }
+
+            function drawObjects() {
+                segmentLayer.replaceChildren();
+                lineLayer.replaceChildren();
+                rayLayer.replaceChildren();
+                polygonLayer.replaceChildren();
+
+                state.objects.forEach(object => {
+                    const points = object.points.map(getPoint).filter(Boolean);
+                    if (object.type === "polygon" && points.length >= 3) {
+                        polygonLayer.appendChild(svgElement("polygon", {
+                            points: points.map(point => `${point.x},${point.y}`).join(" "),
+                            fill: "rgba(132, 101, 232, .18)",
+                            stroke: "#7656d8",
+                            "stroke-width": "5",
+                            "stroke-linejoin": "round"
+                        }));
+                    }
+                    if (points.length < 2 || object.type === "polygon") return;
+                    const [a, b] = points;
+                    if (object.type === "segment") {
+                        segmentLayer.appendChild(svgElement("line", {
+                            x1: a.x, y1: a.y, x2: b.x, y2: b.y,
+                            stroke: "#168d86", "stroke-width": "6", "stroke-linecap": "round"
+                        }));
+                    }
+                    if (object.type === "line") {
+                        const [start, end] = clippedLine(a, b);
+                        lineLayer.appendChild(svgElement("line", {
+                            x1: start.x, y1: start.y, x2: end.x, y2: end.y,
+                            stroke: "#2f72cf", "stroke-width": "4", "stroke-linecap": "round"
+                        }));
+                    }
+                    if (object.type === "ray") {
+                        const [start, end] = clippedRay(a, b);
+                        rayLayer.appendChild(svgElement("line", {
+                            x1: start.x, y1: start.y, x2: end.x, y2: end.y,
+                            stroke: "#e14e56", "stroke-width": "5", "stroke-linecap": "round",
+                            "marker-end": "url(#rayArrow)"
+                        }));
+                    }
+                });
+            }
+
+            function drawPoints() {
+                pointLayer.replaceChildren();
+                state.points.forEach(point => {
+                    const group = svgElement("g", { "data-point-id": point.id, class: "point-hit" });
+                    group.appendChild(svgElement("circle", {
+                        cx: point.x, cy: point.y, r: "16", fill: "transparent", "data-point-id": point.id
+                    }));
+                    group.appendChild(svgElement("circle", {
+                        cx: point.x, cy: point.y, r: "7.5", fill: "#2d3142", stroke: "#ffffff", "stroke-width": "3",
+                        filter: "url(#pointShadow)", "data-point-id": point.id
+                    }));
+                    const label = svgElement("text", {
+                        x: point.x + 13, y: point.y - 12, fill: "#26324a", "font-size": "22", "font-weight": "800",
+                        "font-family": "Quicksand, sans-serif", "paint-order": "stroke", stroke: "#ffffff", "stroke-width": "5",
+                        "stroke-linejoin": "round", "data-point-id": point.id
+                    });
+                    label.textContent = point.label;
+                    group.appendChild(label);
+                    if (state.pending.includes(point.id)) {
+                        group.insertBefore(svgElement("circle", {
+                            cx: point.x, cy: point.y, r: "13", fill: "none", stroke: "#ffd93d", "stroke-width": "5"
+                        }), group.firstChild);
+                    }
+                    pointLayer.appendChild(group);
+                });
+            }
+
+            function drawPreview() {
+                previewLayer.replaceChildren();
+                if (!state.pending.length) return;
+                const points = state.pending.map(getPoint).filter(Boolean);
+                if (state.tool === "polygon") {
+                    const previewPoints = points.concat(state.pointer ? [state.pointer] : []);
+                    if (previewPoints.length >= 2) {
+                        previewLayer.appendChild(svgElement("polyline", {
+                            points: previewPoints.map(point => `${point.x},${point.y}`).join(" "),
+                            fill: "rgba(132, 101, 232, .08)", stroke: "#a38be8", "stroke-width": "4",
+                            "stroke-dasharray": "10 8", "stroke-linejoin": "round"
+                        }));
+                    }
+                    return;
+                }
+                if (state.pointer && points[0]) {
+                    previewLayer.appendChild(svgElement("line", {
+                        x1: points[0].x, y1: points[0].y, x2: state.pointer.x, y2: state.pointer.y,
+                        stroke: "#9aa9bd", "stroke-width": "4", "stroke-dasharray": "10 8"
+                    }));
+                }
+            }
+
+            function updateCounts() {
+                document.getElementById("pointCount").textContent = state.points.length;
+                ["segment", "line", "ray", "polygon"].forEach(type => {
+                    document.getElementById(`${type}Count`).textContent = state.objects.filter(object => object.type === type).length;
+                });
+            }
+
+            function updateStatus() {
+                const count = state.pending.length;
+                if (!count) {
+                    statusText.innerHTML = help[state.tool][1];
+                } else if (state.tool === "polygon") {
+                    statusText.innerHTML = `<strong>Polygon:</strong> ${count} ${count === 1 ? "vertex" : "vertices"} chosen. ${count >= 3 ? "Finish or click the first point." : "Choose another vertex."}`;
+                } else {
+                    const noun = state.tool === "ray" ? "direction point" : "second point";
+                    statusText.innerHTML = `<strong>${state.tool[0].toUpperCase() + state.tool.slice(1)}:</strong> choose the ${noun}.`;
+                }
+                modeHelp.textContent = help[state.tool][0];
+                finishBar.classList.toggle("show", state.tool === "polygon" && count > 0);
+                finishPolygonBtn.disabled = count < 3;
+                undoBtn.disabled = state.history.length === 0;
+            }
+
+            function render() {
+                document.getElementById("boardBackground").setAttribute("fill", state.showGrid ? "url(#largeGrid)" : "#ffffff");
+                drawObjects();
+                drawPreview();
+                drawPoints();
+                updateCounts();
+                updateStatus();
+            }
+
+            function cancelDraft({ restorePoints = true } = {}) {
+                if (state.draftSnapshot && restorePoints) restore(state.draftSnapshot);
+                state.pending = [];
+                state.draftSnapshot = null;
+                state.pointer = null;
+                render();
+            }
+
+            function finishPolygon() {
+                if (state.tool !== "polygon" || state.pending.length < 3) return;
+                const before = state.draftSnapshot;
+                addObject("polygon", state.pending);
+                state.pending = [];
+                state.draftSnapshot = null;
+                state.pointer = null;
+                if (before) remember(before);
+                render();
+                statusText.innerHTML = "<strong>Polygon complete!</strong> Its vertices are still linked.";
+            }
+
+            function chooseTool(tool) {
+                if (state.tool === tool) return;
+                if (state.pending.length) cancelDraft();
+                state.tool = tool;
+                board.dataset.tool = tool;
+                document.querySelectorAll(".tool-btn").forEach(button => {
+                    button.setAttribute("aria-pressed", String(button.dataset.tool === tool));
+                });
+                render();
+                board.focus({ preventScroll: true });
+            }
+
+            function handleConstructionClick(position) {
+                if (state.tool === "point") {
+                    if (nearestPoint(position.x, position.y)) return;
+                    remember();
+                    addPoint(position.x, position.y);
+                    render();
+                    return;
+                }
+
+                if (!["segment", "line", "ray", "polygon"].includes(state.tool)) return;
+                if (!state.pending.length) state.draftSnapshot = snapshot();
+                const point = getOrCreatePoint(position.x, position.y);
+
+                if (state.tool === "polygon") {
+                    if (state.pending.length >= 3 && point.id === state.pending[0]) {
+                        finishPolygon();
+                        return;
+                    }
+                    if (state.pending[state.pending.length - 1] !== point.id && !state.pending.includes(point.id)) {
+                        state.pending.push(point.id);
+                    }
+                    render();
+                    return;
+                }
+
+                if (!state.pending.length) {
+                    state.pending.push(point.id);
+                    render();
+                    return;
+                }
+                if (point.id === state.pending[0]) return;
+                addObject(state.tool, [state.pending[0], point.id]);
+                const before = state.draftSnapshot;
+                state.pending = [];
+                state.draftSnapshot = null;
+                state.pointer = null;
+                if (before) remember(before);
+                render();
+            }
+
+            function pointFromTarget(target) {
+                const id = target.closest("[data-point-id]")?.dataset.pointId;
+                return id ? getPoint(id) : null;
+            }
+
+            board.addEventListener("pointerdown", event => {
+                const position = screenToBoard(event);
+                const targetPoint = pointFromTarget(event.target);
+                if (state.tool === "move" && targetPoint) {
+                    event.preventDefault();
+                    board.setPointerCapture(event.pointerId);
+                    state.drag = {
+                        id: targetPoint.id,
+                        pointerId: event.pointerId,
+                        before: snapshot(),
+                        startX: targetPoint.x,
+                        startY: targetPoint.y
+                    };
+                    board.classList.add("dragging");
+                    return;
+                }
+                if (state.tool !== "move") handleConstructionClick(position);
+            });
+
+            board.addEventListener("pointermove", event => {
+                const position = screenToBoard(event);
+                if (state.drag && event.pointerId === state.drag.pointerId) {
+                    const point = getPoint(state.drag.id);
+                    point.x = clamp(position.x, 14, BOARD.width - 14);
+                    point.y = clamp(position.y, 14, BOARD.height - 14);
+                    render();
+                    return;
+                }
+                state.pointer = position;
+                drawPreview();
+            });
+
+            function endDrag(event) {
+                if (!state.drag || event.pointerId !== state.drag.pointerId) return;
+                const point = getPoint(state.drag.id);
+                const moved = Math.hypot(point.x - state.drag.startX, point.y - state.drag.startY) > .5;
+                if (moved) remember(state.drag.before);
+                state.drag = null;
+                board.classList.remove("dragging");
+                render();
+            }
+            board.addEventListener("pointerup", endDrag);
+            board.addEventListener("pointercancel", endDrag);
+            board.addEventListener("pointerleave", () => {
+                if (!state.drag) {
+                    state.pointer = null;
+                    drawPreview();
+                }
+            });
+
+            document.querySelectorAll(".tool-btn").forEach(button => {
+                button.addEventListener("click", () => chooseTool(button.dataset.tool));
+            });
+
+            finishPolygonBtn.addEventListener("click", finishPolygon);
+            document.getElementById("cancelConstructionBtn").addEventListener("click", () => cancelDraft());
+
+            undoBtn.addEventListener("click", () => {
+                if (state.pending.length) {
+                    cancelDraft();
+                    return;
+                }
+                const previous = state.history.pop();
+                if (previous) restore(previous);
+            });
+
+            document.getElementById("clearBtn").addEventListener("click", () => {
+                if (!state.points.length && !state.objects.length) return;
+                remember();
+                state.points = [];
+                state.objects = [];
+                state.pending = [];
+                state.draftSnapshot = null;
+                state.nextPoint = 0;
+                state.nextObject = 0;
+                render();
+            });
+
+            document.getElementById("gridBtn").addEventListener("click", event => {
+                state.showGrid = !state.showGrid;
+                event.currentTarget.setAttribute("aria-pressed", String(state.showGrid));
+                render();
+            });
+
+            document.getElementById("snapBtn").addEventListener("click", event => {
+                state.snap = !state.snap;
+                event.currentTarget.setAttribute("aria-pressed", String(state.snap));
+            });
+
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape" && state.pending.length) cancelDraft();
+                if (event.key === "Enter" && state.tool === "polygon") finishPolygon();
+                if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+                    event.preventDefault();
+                    undoBtn.click();
+                }
+            });
+
+            render();
+        })();
+    </script>
+</body>
+</html>

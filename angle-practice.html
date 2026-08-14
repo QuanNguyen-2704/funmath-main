@@ -125,8 +125,7 @@
             user-select: none;
             background: #fbfdff;
         }
-        #protractorGroup { cursor: grab; }
-        #protractorGroup.dragging { cursor: grabbing; }
+        #protractorGroup { cursor: default; }
         .rotate-handle { cursor: crosshair; }
         .ray-handle { cursor: grab; }
         .ray-handle:active { cursor: grabbing; }
@@ -249,7 +248,7 @@
             <span class="mission-emoji" aria-hidden="true">🕵️</span>
             <div>
                 <strong>Measure before you reveal!</strong>
-                <p>Drag A or C to create your own angle. Then place the protractor's centre on B, rotate its baseline onto one arm, and measure.</p>
+                <p>Drag A, B, or C to create your own angle. The protractor stays centred on B—rotate its baseline onto one arm and measure.</p>
             </div>
         </section>
 
@@ -261,7 +260,7 @@
                         <button id="gridToggle" class="small-btn" type="button" aria-pressed="true"># Grid</button>
                         <button id="angleSnapToggle" class="small-btn" type="button" aria-pressed="false">🧲 Snap</button>
                         <button id="protractorToggle" class="small-btn" type="button" aria-pressed="true">📏 Hide protractor</button>
-                        <button id="resetProtractor" class="small-btn" type="button">↺ Reset tool</button>
+                        <button id="resetProtractor" class="small-btn" type="button">↺ Reset rotation</button>
                     </div>
                 </div>
 
@@ -287,11 +286,9 @@
                         <path id="angleSector" fill="rgba(255,107,107,.2)" stroke="#ff6b6b" stroke-width="4"/>
                         <line id="baseRay" stroke="#26324a" stroke-width="7" stroke-linecap="round" marker-end="url(#angleArrow)"/>
                         <line id="turnRay" stroke="#26324a" stroke-width="7" stroke-linecap="round" marker-end="url(#angleArrow)"/>
-                        <circle id="angleVertex" r="10" fill="#ff6b6b" stroke="#fff" stroke-width="4"/>
-                        <text id="labelB" font-family="Quicksand, sans-serif" font-size="25" font-weight="800" fill="#26324a" paint-order="stroke" stroke="#fff" stroke-width="6">B</text>
                     </g>
 
-                    <g id="protractorGroup" filter="url(#toolShadow)" aria-label="Draggable protractor">
+                    <g id="protractorGroup" filter="url(#toolShadow)" aria-label="Protractor centred on point B">
                         <path data-drag-tool="true" d="M-235 0 A235 235 0 0 1 235 0 L-235 0 Z" fill="rgba(220, 252, 250, .78)" stroke="#168d86" stroke-width="5"/>
                         <path data-drag-tool="true" d="M-45 0 A45 45 0 0 1 45 0" fill="none" stroke="#168d86" stroke-width="3"/>
                         <g id="protractorTicks" data-drag-tool="true"></g>
@@ -303,7 +300,7 @@
                             <circle r="26" fill="#8c6ce9" stroke="#fff" stroke-width="4" data-rotate-tool="true"/>
                             <text x="0" y="9" text-anchor="middle" fill="#fff" font-size="29" font-weight="800" data-rotate-tool="true">↻</text>
                         </g>
-                        <text x="0" y="-28" text-anchor="middle" fill="#168d86" font-size="15" font-weight="800" font-family="Quicksand, sans-serif" data-drag-tool="true">DRAG CENTRE TO B</text>
+                        <text x="0" y="-28" text-anchor="middle" fill="#168d86" font-size="15" font-weight="800" font-family="Quicksand, sans-serif">CENTRE LOCKED TO B</text>
                     </g>
 
                     <g id="rayHandleLayer">
@@ -318,6 +315,12 @@
                             <circle class="drag-halo" r="28"/>
                             <circle class="point-dot" r="9" fill="#ff6b6b" stroke="#fff" stroke-width="4"/>
                             <text x="19" y="-13" fill="#26324a" font-family="Quicksand, sans-serif" font-size="22" font-weight="800" paint-order="stroke" stroke="#fff" stroke-width="6" pointer-events="none">C</text>
+                        </g>
+                        <g id="vertexHandle" class="ray-handle" data-arm="vertex" role="button" aria-label="Drag point B to move the angle origin" tabindex="0">
+                            <title>Drag B to move the angle origin</title>
+                            <circle class="drag-halo" r="30"/>
+                            <circle class="point-dot" r="10" fill="#ff6b6b" stroke="#fff" stroke-width="4"/>
+                            <text x="18" y="30" fill="#26324a" font-family="Quicksand, sans-serif" font-size="22" font-weight="800" paint-order="stroke" stroke="#fff" stroke-width="6" pointer-events="none">B</text>
                         </g>
                     </g>
                 </svg>
@@ -365,7 +368,7 @@
 
                 <div class="tip-card">
                     <h3>Protractor controls</h3>
-                    <p><strong>Move the angle:</strong> drag the A or C dot at an arrow tip. Turn on Snap to lock a tip to grid intersections. <strong>Move the protractor:</strong> drag its body, then use the purple ↻ handle to rotate it.</p>
+                    <p><strong>Move the angle:</strong> drag A, B, or C. Snap locks every point to grid intersections. The protractor centre stays attached to B; use only the purple ↻ handle to rotate it.</p>
                     <div class="scale-key">
                         <span><i class="dot" style="background:#168d86"></i>Outer scale</span>
                         <span><i class="dot" style="background:#7656d8"></i>Inner scale</span>
@@ -391,7 +394,7 @@
                 snap: false,
                 showGrid: true,
                 showProtractor: true,
-                protractor: { x: 280, y: 600, rotation: 0 },
+                protractor: { rotation: 0 },
                 interaction: null
             };
 
@@ -452,6 +455,41 @@
                     x: clamp(x, 28, STAGE.width - 28),
                     y: clamp(y, 28, STAGE.height - 28)
                 };
+            }
+
+            function currentArmTips() {
+                return {
+                    base: polar(vertex, state.baseLength, state.base),
+                    turn: polar(vertex, state.turnLength, state.base + state.angle)
+                };
+            }
+
+            function vertexDragPoint(point) {
+                let x = point.x;
+                let y = point.y;
+                if (state.snap) {
+                    x = Math.round(x / 25) * 25;
+                    y = Math.round(y / 25) * 25;
+                }
+                return {
+                    x: clamp(x, 250, 750),
+                    y: clamp(y, 300, 600)
+                };
+            }
+
+            function moveVertex(point, fixedTips) {
+                const nextVertex = vertexDragPoint(point);
+                vertex.x = nextVertex.x;
+                vertex.y = nextVertex.y;
+
+                state.base = directionFromPoint(fixedTips.base);
+                state.baseLength = Math.max(60, Math.hypot(fixedTips.base.x - vertex.x, fixedTips.base.y - vertex.y));
+                const turnDirection = directionFromPoint(fixedTips.turn);
+                state.turnLength = Math.max(60, Math.hypot(fixedTips.turn.x - vertex.x, fixedTips.turn.y - vertex.y));
+                state.angle = validAngle(turnDirection - state.base);
+
+                updateAngleDrawing();
+                updateProtractor();
             }
 
             function rayToEdge(origin, degrees, padding = 22) {
@@ -560,19 +598,13 @@
                     `M ${vertex.x} ${vertex.y} L ${arcStart.x} ${arcStart.y} A ${arcRadius} ${arcRadius} 0 ${largeArc} 0 ${arcEnd.x} ${arcEnd.y} Z`
                 );
 
-                const vertexCircle = document.getElementById("angleVertex");
-                vertexCircle.setAttribute("cx", vertex.x);
-                vertexCircle.setAttribute("cy", vertex.y);
-
-                document.getElementById("labelB").setAttribute("x", vertex.x + 16);
-                document.getElementById("labelB").setAttribute("y", vertex.y + 30);
                 document.getElementById("baseHandle").setAttribute("transform", `translate(${baseEnd.x} ${baseEnd.y})`);
                 document.getElementById("turnHandle").setAttribute("transform", `translate(${turnEnd.x} ${turnEnd.y})`);
+                document.getElementById("vertexHandle").setAttribute("transform", `translate(${vertex.x} ${vertex.y})`);
             }
 
             function updateProtractor() {
-                const { x, y, rotation } = state.protractor;
-                protractorGroup.setAttribute("transform", `translate(${x} ${y}) rotate(${rotation})`);
+                protractorGroup.setAttribute("transform", `translate(${vertex.x} ${vertex.y}) rotate(${state.protractor.rotation})`);
                 protractorGroup.style.display = state.showProtractor ? "block" : "none";
             }
 
@@ -594,7 +626,7 @@
             function updateMode() {
                 customAngleBtn.setAttribute("aria-pressed", String(state.custom));
                 modeMessage.textContent = state.custom
-                    ? "Custom angle: drag A or C, then measure your creation."
+                    ? "Custom angle: drag A, B, or C, then measure your creation."
                     : "Random challenge: measure first, then reveal the answers.";
             }
 
@@ -604,7 +636,7 @@
                     state.angle = 60;
                     state.base = 0;
                     resetArmLengths();
-                    resetProtractorPosition();
+                    resetProtractorRotation();
                 }
                 hideAnswers();
                 clearGuess();
@@ -612,8 +644,8 @@
                 updateAngleDrawing();
             }
 
-            function resetProtractorPosition() {
-                state.protractor = { x: 280, y: 600, rotation: 0 };
+            function resetProtractorRotation() {
+                state.protractor.rotation = 0;
                 updateProtractor();
             }
 
@@ -638,7 +670,7 @@
                 state.custom = false;
                 hideAnswers();
                 clearGuess();
-                resetProtractorPosition();
+                resetProtractorRotation();
                 updateMode();
                 updateAngleDrawing();
                 guessInput.focus({ preventScroll: true });
@@ -697,7 +729,7 @@
                 event.currentTarget.textContent = state.showProtractor ? "📏 Hide protractor" : "📏 Show protractor";
                 updateProtractor();
             });
-            document.getElementById("resetProtractor").addEventListener("click", resetProtractorPosition);
+            document.getElementById("resetProtractor").addEventListener("click", resetProtractorRotation);
 
             document.querySelectorAll(".ray-handle").forEach(handle => {
                 handle.addEventListener("pointerdown", event => {
@@ -705,7 +737,11 @@
                     event.stopPropagation();
                     enterCustomMode(false);
                     const arm = handle.dataset.arm;
-                    state.interaction = {
+                    state.interaction = arm === "vertex" ? {
+                        mode: "vertex",
+                        pointerId: event.pointerId,
+                        fixedTips: currentArmTips()
+                    } : {
                         mode: "arm",
                         arm,
                         pointerId: event.pointerId,
@@ -718,6 +754,20 @@
                     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
                     event.preventDefault();
                     enterCustomMode(false);
+                    if (handle.dataset.arm === "vertex") {
+                        const distance = event.shiftKey || state.snap ? 25 : 5;
+                        const delta = {
+                            ArrowLeft: { x: -distance, y: 0 },
+                            ArrowRight: { x: distance, y: 0 },
+                            ArrowUp: { x: 0, y: -distance },
+                            ArrowDown: { x: 0, y: distance }
+                        }[event.key];
+                        moveVertex(
+                            { x: vertex.x + delta.x, y: vertex.y + delta.y },
+                            currentArmTips()
+                        );
+                        return;
+                    }
                     const step = event.shiftKey ? 5 : 1;
                     const direction = ["ArrowRight", "ArrowUp"].includes(event.key) ? step : -step;
                     if (handle.dataset.arm === "base") {
@@ -732,20 +782,14 @@
             });
 
             protractorGroup.addEventListener("pointerdown", event => {
+                if (!event.target.closest("[data-rotate-tool]")) return;
                 event.preventDefault();
-                const point = stagePoint(event);
-                const rotating = Boolean(event.target.closest("[data-rotate-tool]"));
-                state.interaction = rotating ? {
+                event.stopPropagation();
+                state.interaction = {
                     mode: "rotate",
                     pointerId: event.pointerId
-                } : {
-                    mode: "drag",
-                    pointerId: event.pointerId,
-                    offsetX: point.x - state.protractor.x,
-                    offsetY: point.y - state.protractor.y
                 };
                 stage.setPointerCapture(event.pointerId);
-                protractorGroup.classList.add("dragging");
             });
 
             stage.addEventListener("pointermove", event => {
@@ -764,12 +808,10 @@
                         state.angle = validAngle(direction - state.base);
                     }
                     updateAngleDrawing();
-                } else if (state.interaction.mode === "drag") {
-                    state.protractor.x = Math.max(35, Math.min(STAGE.width - 35, point.x - state.interaction.offsetX));
-                    state.protractor.y = Math.max(35, Math.min(STAGE.height - 18, point.y - state.interaction.offsetY));
-                    updateProtractor();
+                } else if (state.interaction.mode === "vertex") {
+                    moveVertex(point, state.interaction.fixedTips);
                 } else if (state.interaction.mode === "rotate") {
-                    const radians = Math.atan2(point.y - state.protractor.y, point.x - state.protractor.x);
+                    const radians = Math.atan2(point.y - vertex.y, point.x - vertex.x);
                     state.protractor.rotation = radians * 180 / Math.PI + 90;
                     updateProtractor();
                 }
@@ -778,7 +820,6 @@
             function endInteraction(event) {
                 if (!state.interaction || event.pointerId !== state.interaction.pointerId) return;
                 state.interaction = null;
-                protractorGroup.classList.remove("dragging");
             }
             stage.addEventListener("pointerup", endInteraction);
             stage.addEventListener("pointercancel", endInteraction);

@@ -121,12 +121,12 @@
         .panel-heading p { min-height: 42px; margin: 0; color: var(--muted); font-size: .96rem; }
 
         .canvas-container {
-            position: relative; width: min(320px, 100%); aspect-ratio: 1; margin-bottom: 22px;
-            border-radius: 50%; background: #F8FAFC; overflow: hidden;
-            box-shadow: inset 0 4px 15px rgba(0,0,0,.04);
+            position: relative; width: min(390px, 100%); aspect-ratio: 1; margin-bottom: 22px;
+            border: 3px solid #DFE7F1; border-radius: 24px; background: #F8FAFC; overflow: hidden;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,.04), 0 8px 22px rgba(45,49,66,.08);
         }
         .canvas-container::before {
-            content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+            content: ""; position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
             background-image: linear-gradient(rgba(45,49,66,.05) 2px, transparent 2px),
                               linear-gradient(90deg, rgba(45,49,66,.05) 2px, transparent 2px);
             background-size: 40px 40px; background-position: center;
@@ -136,11 +136,14 @@
             top: calc(50% - 4.5px); left: calc(50% - 4.5px); border-radius: 50%;
             background: var(--ink); opacity: .22; pointer-events: none;
         }
-        .shape-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .shape-layer {
+            position: absolute; inset: 26px; width: calc(100% - 52px); height: calc(100% - 52px);
+            pointer-events: none;
+        }
 
         .fold-canvas {
-            position: absolute; inset: 0; width: 100%; height: 100%; display: block;
-            cursor: default; touch-action: none;
+            position: absolute; inset: 26px; width: calc(100% - 52px); height: calc(100% - 52px);
+            display: block; cursor: default; touch-action: none;
         }
         .fold-canvas.dragging { cursor: grabbing; }
 

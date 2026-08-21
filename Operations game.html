@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operation 24 | Math Adventure Hub</title>
+    <title>Operations Challenge | Math Adventure Hub</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%9E%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -191,7 +191,7 @@
         <a href="index.html" class="back-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Hub
         </a>
-        <h1>Operation 24</h1>
+        <h1>Operations Challenge</h1>
         <div style="width: 80px;"></div>
     </header>
 
@@ -203,7 +203,7 @@
             </div>
             <div class="stats-row">
                 <div class="streak-badge">🔥 Streak: <span id="streak-count">0</span></div>
-                <div class="target-badge">🎯 Target: 24</div>
+                <div class="target-badge">🎯 Target: <span id="target-value">10</span></div>
             </div>
         </div>
 
@@ -245,42 +245,53 @@
 
     <script>
         // --- PUZZLE DATA ---
+        // Normal puzzles are designed for a quick answer (about 10 seconds).
         const normalPuzzleBank = [
-            [1, 2, 3, 4], [2, 3, 4, 8], [2, 2, 3, 8], [3, 3, 4, 6], [1, 2, 6, 6],
-            [2, 4, 4, 8], [2, 3, 5, 6], [3, 4, 5, 7], [1, 3, 4, 4], [2, 3, 6, 9],
-            [4, 6, 8, 9], [3, 5, 7, 8], [1, 2, 7, 9], [2, 4, 5, 8], [3, 4, 6, 8]
+            { numbers: [1, 2, 3, 4], target: 10 },
+            { numbers: [1, 2, 3, 6], target: 15 },
+            { numbers: [2, 3, 4, 5], target: 10 },
+            { numbers: [1, 3, 4, 4], target: 16 },
+            { numbers: [2, 2, 3, 8], target: 15 },
+            { numbers: [1, 2, 5, 8], target: 20 },
+            { numbers: [2, 3, 5, 6], target: 24 },
+            { numbers: [2, 4, 5, 8], target: 18 },
+            { numbers: [1, 3, 6, 9], target: 18 },
+            { numbers: [3, 4, 5, 7], target: 14 },
+            { numbers: [2, 4, 4, 8], target: 12 },
+            { numbers: [1, 2, 7, 9], target: 20 }
         ];
 
-        // Specific puzzles for Hard mode where order matters and brackets are essential
+        // Hard puzzles keep number order fixed and require exactly one bracket
+        // pair. They are intended to take no more than about 30–60 seconds.
         const hardPuzzleBank = [
-            [6, 8, 4, 2], // 6 * 8 / ( 4 - 2 )
-            [8, 4, 6, 3], // ( 8 + 4 ) * 6 / 3
-            [6, 2, 4, 8], // ( 6 - 2 ) * 4 + 8
-            [4, 2, 8, 2], // ( 4 + 2 ) * 8 / 2
-            [9, 3, 5, 3], // ( 9 / 3 + 5 ) * 3
-            [5, 1, 4, 8], // ( 5 - 1 ) * 4 + 8
-            [7, 1, 3, 6], // ( 7 - 1 ) * 3 + 6
-            [5, 5, 2, 8]  // ( 5 / 5 + 2 ) * 8
+            { numbers: [6, 8, 4, 2], target: 22 },
+            { numbers: [8, 4, 6, 3], target: 24 },
+            { numbers: [9, 3, 4, 2], target: 14 },
+            { numbers: [6, 2, 5, 3], target: 17 },
+            { numbers: [4, 2, 7, 3], target: 39 },
+            { numbers: [8, 4, 3, 2], target: 8 },
+            { numbers: [7, 1, 4, 2], target: 12 },
+            { numbers: [5, 3, 6, 2], target: 24 }
         ];
 
         // A sample answer is kept for each locked-order hard puzzle.
         // Every division shown here has a whole-number result.
         const hardPuzzleSolutions = {
-            '6,8,4,2': '6 × 8 ÷ (4 − 2) = 24',
-            '8,4,6,3': '(8 + 4) × 6 ÷ 3 = 24',
-            '6,2,4,8': '(6 − 2) × 4 + 8 = 24',
-            '4,2,8,2': '(4 + 2) × 8 ÷ 2 = 24',
-            '9,3,5,3': '(9 ÷ 3 + 5) × 3 = 24',
-            '5,1,4,8': '(5 − 1) × 4 + 8 = 24',
-            '7,1,3,6': '(7 − 1) × 3 + 6 = 24',
-            '5,5,2,8': '(5 ÷ 5 + 2) × 8 = 24'
+            '22|6,8,4,2': '6 + 8 × (4 − 2) = 22',
+            '24|8,4,6,3': '(8 + 4) × 6 ÷ 3 = 24',
+            '14|9,3,4,2': '(9 ÷ 3 + 4) × 2 = 14',
+            '17|6,2,5,3': '(6 − 2) × 5 − 3 = 17',
+            '39|4,2,7,3': '(4 + 2) × 7 − 3 = 39',
+            '8|8,4,3,2': '(8 + 4) ÷ 3 × 2 = 8',
+            '12|7,1,4,2': '(7 − 1) × 4 ÷ 2 = 12',
+            '24|5,3,6,2': '(5 + 3) × 6 ÷ 2 = 24'
         };
 
         // Finds a normal-mode solution using exactly the same rules as the game:
         // subtraction stays non-negative and every division result is a whole number.
-        function findWholeNumberSolution(numbers) {
+        function findWholeNumberSolution(numbers, target) {
             const search = (items) => {
-                if (items.length === 1) return items[0].value === 24 ? items[0].expr : null;
+                if (items.length === 1) return items[0].value === target ? items[0].expr : null;
 
                 for (let i = 0; i < items.length; i++) {
                     for (let j = i + 1; j < items.length; j++) {
@@ -382,7 +393,7 @@
 
         // --- GAME STATE ---
         let currentMode = 'normal';
-        let currentPuzzle = []; 
+        let currentPuzzle = { numbers: [], target: 10 }; 
         let currentCards = [];  
         let selectedCardIndex = null;
         let selectedOperator = null;
@@ -396,6 +407,7 @@
         const eqBuilder = document.querySelector('.equation-builder');
         const opBtns = document.querySelectorAll('.op-btn');
         const streakEl = document.getElementById('streak-count');
+        const targetEl = document.getElementById('target-value');
         
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
@@ -422,13 +434,15 @@
 
         function loadNewPuzzle() {
             const bank = currentMode === 'normal'
-                ? normalPuzzleBank.filter(puzzle => findWholeNumberSolution(puzzle))
-                : hardPuzzleBank.filter(puzzle => hardPuzzleSolutions[puzzle.join(',')]);
+                ? normalPuzzleBank.filter(puzzle => findWholeNumberSolution(puzzle.numbers, puzzle.target))
+                : hardPuzzleBank.filter(puzzle => hardPuzzleSolutions[puzzle.target + '|' + puzzle.numbers.join(',')]);
             const randomIndex = Math.floor(Math.random() * bank.length);
-            currentPuzzle = [...bank[randomIndex]];
+            const selectedPuzzle = bank[randomIndex];
+            currentPuzzle = { numbers: [...selectedPuzzle.numbers], target: selectedPuzzle.target };
+            targetEl.innerText = currentPuzzle.target;
             
             if (currentMode === 'normal') {
-                currentPuzzle.sort(() => Math.random() - 0.5); // Shuffle for normal mode
+                currentPuzzle.numbers.sort(() => Math.random() - 0.5); // Shuffle for normal mode
                 resetNormalPuzzle();
             } else {
                 buildHardModeUI();
@@ -437,7 +451,7 @@
 
         // --- NORMAL MODE LOGIC ---
         function resetNormalPuzzle() {
-            currentCards = [...currentPuzzle];
+            currentCards = [...currentPuzzle.numbers];
             clearSelections();
             renderCards();
         }
@@ -533,7 +547,7 @@
                 // Number
                 const numEl = document.createElement('div');
                 numEl.className = 'hm-num';
-                numEl.innerText = currentPuzzle[i];
+                numEl.innerText = currentPuzzle.numbers[i];
                 eqBuilder.appendChild(numEl);
                 // Post-number bracket
                 eqBuilder.appendChild(createBracketSlot(i * 2 + 1));
@@ -555,7 +569,7 @@
             // Equals 24 static element
             const equalsEl = document.createElement('div');
             equalsEl.className = 'hm-equals';
-            equalsEl.innerText = '= 24';
+            equalsEl.innerText = '= ' + currentPuzzle.target;
             eqBuilder.appendChild(equalsEl);
         }
 
@@ -579,8 +593,8 @@
                 let b1 = document.querySelector(`.bracket-slot[data-index="${i*2}"]`).innerText;
                 let b2 = document.querySelector(`.bracket-slot[data-index="${i*2+1}"]`).innerText;
                 
-                exprToEval += b1 + currentPuzzle[i] + b2;
-                displayExpr += b1 + currentPuzzle[i] + b2;
+                exprToEval += b1 + currentPuzzle.numbers[i] + b2;
+                displayExpr += b1 + currentPuzzle.numbers[i] + b2;
 
                 if (i < 3) {
                     let opUI = document.querySelector(`.hm-op-slot[data-index="${i}"]`).innerText;

@@ -228,7 +228,7 @@
 
         <div class="controls">
             <button class="game-btn secondary" id="btn-reset">↩️ Undo / Reset</button>
-            <button class="game-btn primary" id="btn-skip">⏭️ Skip Puzzle</button>
+            <button class="game-btn primary" id="btn-skip">⏭️ Skip Puzzle</button>\n            <button class="game-btn" id="btn-impossible">🚫 Not Possible</button>
             <button class="game-btn" id="btn-rules">❓ How to Play</button>
         </div>
     </main>
@@ -246,7 +246,7 @@
         // --- PUZZLE DATA ---
         const normalPuzzleBank = [
             [1, 2, 3, 4], [2, 3, 4, 8], [2, 2, 3, 8], [3, 3, 4, 6], [1, 2, 6, 6],
-            [2, 4, 4, 8], [2, 3, 5, 6], [3, 4, 5, 7], [1, 4, 5, 6], [2, 3, 6, 9],
+            [2, 4, 4, 8], [2, 3, 5, 6], [3, 4, 5, 7], [1, 3, 4, 4], [2, 3, 6, 9],
             [4, 6, 8, 9], [3, 5, 7, 8], [1, 2, 7, 9], [2, 4, 5, 8], [3, 4, 6, 8]
         ];
 
@@ -261,6 +261,123 @@
             [7, 1, 3, 6], // ( 7 - 1 ) * 3 + 6
             [5, 5, 2, 8]  // ( 5 / 5 + 2 ) * 8
         ];
+
+        // A sample answer is kept for each locked-order hard puzzle.
+        // Every division shown here has a whole-number result.
+        const hardPuzzleSolutions = {
+            '6,8,4,2': '6 × 8 ÷ (4 − 2) = 24',
+            '8,4,6,3': '(8 + 4) × 6 ÷ 3 = 24',
+            '6,2,4,8': '(6 − 2) × 4 + 8 = 24',
+            '4,2,8,2': '(4 + 2) × 8 ÷ 2 = 24',
+            '9,3,5,3': '(9 ÷ 3 + 5) × 3 = 24',
+            '5,1,4,8': '(5 − 1) × 4 + 8 = 24',
+            '7,1,3,6': '(7 − 1) × 3 + 6 = 24',
+            '5,5,2,8': '(5 ÷ 5 + 2) × 8 = 24'
+        };
+
+        // Finds a normal-mode solution using exactly the same rules as the game:
+        // subtraction stays non-negative and every division result is a whole number.
+        function findWholeNumberSolution(numbers) {
+            const search = (items) => {
+                if (items.length === 1) return items[0].value === 24 ? items[0].expr : null;
+
+                for (let i = 0; i < items.length; i++) {
+                    for (let j = i + 1; j < items.length; j++) {
+                        const a = items[i], b = items[j];
+                        const rest = items.filter((_, index) => index !== i && index !== j);
+                        const bigger = a.value >= b.value ? a : b;
+                        const smaller = a.value >= b.value ? b : a;
+                        const candidates = [
+                            { value: a.value + b.value, expr: `(${a.expr} + ${b.expr})` },
+                            { value: a.value * b.value, expr: `(${a.expr} × ${b.expr})` },
+                            { value: bigger.value - smaller.value, expr: `(${bigger.expr} − ${smaller.expr})` }
+                        ];
+
+                        if (b.value !== 0 && a.value % b.value === 0) {
+                            candidates.push({ value: a.value / b.value, expr: `(${a.expr} ÷ ${b.expr})` });
+                        }
+                        if (a.value !== 0 && b.value % a.value === 0) {
+                            candidates.push({ value: b.value / a.value, expr: `(${b.expr} ÷ ${a.expr})` });
+                        }
+
+                        for (const candidate of candidates) {
+                            const answer = search([...rest, candidate]);
+                            if (answer) return answer;
+                        }
+                    }
+                }
+                return null;
+            };
+
+            return search(numbers.map(value => ({ value, expr: String(value) })));
+        }
+
+        // Evaluates hard-mode expressions while rejecting division that creates
+        // a fraction at any intermediate step.
+        function evaluateWholeNumberExpression(expression) {
+            let position = 0;
+
+            const skipSpaces = () => {
+                while (expression[position] === ' ') position++;
+            };
+            const parseNumber = () => {
+                skipSpaces();
+                let digits = '';
+                while (/\d/.test(expression[position] || '')) digits += expression[position++];
+                if (!digits) throw new Error('Expected a number');
+                return Number(digits);
+            };
+            const parseFactor = () => {
+                skipSpaces();
+                if (expression[position] === '(') {
+                    position++;
+                    const value = parseAddSubtract();
+                    skipSpaces();
+                    if (expression[position] !== ')') throw new Error('Missing closing bracket');
+                    position++;
+                    return value;
+                }
+                return parseNumber();
+            };
+            const parseMultiplyDivide = () => {
+                let value = parseFactor();
+                while (true) {
+                    skipSpaces();
+                    const operator = expression[position];
+                    if (operator !== '*' && operator !== '/') break;
+                    position++;
+                    const right = parseFactor();
+                    if (operator === '*') {
+                        value *= right;
+                    } else {
+                        if (right === 0 || !Number.isInteger(value) || !Number.isInteger(right) || value % right !== 0) {
+                            const error = new Error('Division must give a whole number');
+                            error.code = 'NON_WHOLE_DIVISION';
+                            throw error;
+                        }
+                        value /= right;
+                    }
+                }
+                return value;
+            };
+            const parseAddSubtract = () => {
+                let value = parseMultiplyDivide();
+                while (true) {
+                    skipSpaces();
+                    const operator = expression[position];
+                    if (operator !== '+' && operator !== '-') break;
+                    position++;
+                    const right = parseMultiplyDivide();
+                    value = operator === '+' ? value + right : value - right;
+                }
+                return value;
+            };
+
+            const result = parseAddSubtract();
+            skipSpaces();
+            if (position !== expression.length) throw new Error('Unexpected symbol');
+            return result;
+        }
 
         // --- GAME STATE ---
         let currentMode = 'normal';
@@ -303,7 +420,9 @@
         }));
 
         function loadNewPuzzle() {
-            const bank = currentMode === 'normal' ? normalPuzzleBank : hardPuzzleBank;
+            const bank = currentMode === 'normal'
+                ? normalPuzzleBank.filter(puzzle => findWholeNumberSolution(puzzle))
+                : hardPuzzleBank.filter(puzzle => hardPuzzleSolutions[puzzle.join(',')]);
             const randomIndex = Math.floor(Math.random() * bank.length);
             currentPuzzle = [...bank[randomIndex]];
             
@@ -489,8 +608,7 @@
 
             // Evaluation
             try {
-                let result = new Function('return ' + exprToEval)();
-                result = Math.round(result * 1000) / 1000; // prevent floating point weirdness
+                let result = evaluateWholeNumberExpression(exprToEval);
                 
                 if (result === 24) {
                     streak++; streakEl.innerText = streak;
@@ -500,7 +618,11 @@
                     showModal("Not quite 24!", `Your equation equals ${result}.<br><br><small>${displayExpr} = ${result}</small>`, false);
                 }
             } catch(e) {
-                showModal("Math Error!", "That equation doesn't make sense. Check where you placed your brackets!", false);
+                if (e.code === 'NON_WHOLE_DIVISION') {
+                    showModal("Whole Numbers Only!", "Each division step must give a whole number. Try a different operation or move your brackets.", false);
+                } else {
+                    showModal("Math Error!", "That equation doesn't make sense. Check where you placed your brackets!", false);
+                }
             }
         });
 
@@ -531,6 +653,23 @@
         });
         
         document.getElementById('btn-skip').addEventListener('click', () => { streak = 0; streakEl.innerText = streak; loadNewPuzzle(); });
+
+        document.getElementById('btn-impossible').addEventListener('click', () => {
+            const solution = currentMode === 'normal'
+                ? findWholeNumberSolution(currentPuzzle)
+                : hardPuzzleSolutions[currentPuzzle.join(',')];
+
+            if (solution) {
+                streak = 0; streakEl.innerText = streak;
+                showModal(
+                    "This one is possible!",
+                    `Here is one sample answer using whole-number division:<br><br><strong>${solution}${currentMode === 'normal' ? ' = 24' : ''}</strong>`,
+                    false
+                );
+            } else {
+                showModal("You spotted it!", "This puzzle has no solution under the whole-number division rule. We’ll replace it with a new one.", true);
+            }
+        });
 
         document.getElementById('btn-rules').addEventListener('click', () => {
             modalTitle.innerText = "How to Play";

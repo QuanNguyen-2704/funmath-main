@@ -524,12 +524,12 @@
 
         function checkNormalWin() {
             if (currentCards.length === 1) {
-                if (currentCards[0] === 24) {
+                if (currentCards[0] === currentPuzzle.target) {
                     streak++; streakEl.innerText = streak;
-                    showModal("🎉 Target 24 Reached!", "Brilliant math skills! You combined all the numbers perfectly.", true);
+                    showModal(`🎉 Target ${currentPuzzle.target} Reached!`, "Brilliant math skills! You combined all the numbers perfectly.", true);
                 } else {
                     streak = 0; streakEl.innerText = streak;
-                    showModal("Not quite 24!", `You ended up with ${currentCards[0]}. Let's try that puzzle again.`, false);
+                    showModal(`Not quite ${currentPuzzle.target}!`, `You ended up with ${currentCards[0]}. Let's try that puzzle again.`, false);
                     resetNormalPuzzle();
                 }
             }
@@ -566,7 +566,7 @@
                 }
             }
             
-            // Equals 24 static element
+            // Equals-target static element
             const equalsEl = document.createElement('div');
             equalsEl.className = 'hm-equals';
             equalsEl.innerText = '= ' + currentPuzzle.target;
@@ -625,12 +625,12 @@
             try {
                 let result = evaluateWholeNumberExpression(exprToEval);
                 
-                if (result === 24) {
+                if (result === currentPuzzle.target) {
                     streak++; streakEl.innerText = streak;
-                    showModal("🎉 Target 24 Reached!", `Correct! <br><strong>${displayExpr} = 24</strong>`, true);
+                    showModal(`🎉 Target ${currentPuzzle.target} Reached!`, `Correct! <br><strong>${displayExpr} = ${currentPuzzle.target}</strong>`, true);
                 } else {
                     streak = 0; streakEl.innerText = streak;
-                    showModal("Not quite 24!", `Your equation equals ${result}.<br><br><small>${displayExpr} = ${result}</small>`, false);
+                    showModal(`Not quite ${currentPuzzle.target}!`, `Your equation equals ${result}.<br><br><small>${displayExpr} = ${result}</small>`, false);
                 }
             } catch(e) {
                 if (e.code === 'NON_WHOLE_DIVISION') {
@@ -671,14 +671,14 @@
 
         document.getElementById('btn-impossible').addEventListener('click', () => {
             const solution = currentMode === 'normal'
-                ? findWholeNumberSolution(currentPuzzle)
-                : hardPuzzleSolutions[currentPuzzle.join(',')];
+                ? findWholeNumberSolution(currentPuzzle.numbers, currentPuzzle.target)
+                : hardPuzzleSolutions[currentPuzzle.target + '|' + currentPuzzle.numbers.join(',')];
 
             if (solution) {
                 streak = 0; streakEl.innerText = streak;
                 showModal(
                     "This one is possible!",
-                    `Here is one sample answer using whole-number division:<br><br><strong>${solution}${currentMode === 'normal' ? ' = 24' : ''}</strong>`,
+                    `Here is one sample answer using whole-number division:<br><br><strong>${solution}${currentMode === 'normal' ? ' = ' + currentPuzzle.target : ''}</strong>`,
                     false
                 );
             } else {
@@ -689,9 +689,9 @@
         document.getElementById('btn-rules').addEventListener('click', () => {
             modalTitle.innerText = "How to Play";
             if(currentMode === 'normal') {
-                modalDesc.innerHTML = "1. Click a number.<br>2. Choose an operator (+, -, ×, ÷).<br>3. Click another number.<br><br>Keep combining numbers until you only have <strong>one card left</strong>, and it equals exactly <strong>24</strong>!";
+                modalDesc.innerHTML = "1. Click a number.<br>2. Choose an operator (+, -, ×, ÷).<br>3. Click another number.<br><br>Keep combining numbers until you only have <strong>one card left</strong>, and it equals the displayed <strong>target number</strong>!";
             } else {
-                modalDesc.innerHTML = "The numbers are locked in place!<br><br>1. Tap the dashed circles to cycle through operations (+, -, ×, ÷).<br>2. Tap the dashed tall boxes to place exactly <strong>one</strong> pair of brackets `( )`.<br>3. Hit <strong>Check Math</strong> to see if it equals 24!";
+                modalDesc.innerHTML = "The numbers are locked in place!<br><br>1. Tap the dashed circles to cycle through operations (+, -, ×, ÷).<br>2. Tap the dashed tall boxes to place exactly <strong>one</strong> pair of brackets `( )`.<br>3. Hit <strong>Check Math</strong> to see if it equals the displayed target!";
             }
             modalCloseBtn.innerText = "Got it!";
             modalCloseBtn.onclick = () => modal.classList.remove('active');

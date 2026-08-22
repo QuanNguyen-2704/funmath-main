@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operation 24 | Math Adventure Hub</title>
+    <title>Operations Challenge | Math Adventure Hub</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%AA%9E%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -191,7 +191,7 @@
         <a href="index.html" class="back-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg> Hub
         </a>
-        <h1>Operation 24</h1>
+        <h1>Operations Challenge</h1>
         <div style="width: 80px;"></div>
     </header>
 
@@ -203,7 +203,7 @@
             </div>
             <div class="stats-row">
                 <div class="streak-badge">🔥 Streak: <span id="streak-count">0</span></div>
-                <div class="target-badge">🎯 Target: 24</div>
+                <div class="target-badge">🎯 Target: <span id="target-value">10</span></div>
             </div>
         </div>
 
@@ -229,6 +229,7 @@
         <div class="controls">
             <button class="game-btn secondary" id="btn-reset">↩️ Undo / Reset</button>
             <button class="game-btn primary" id="btn-skip">⏭️ Skip Puzzle</button>
+            <button class="game-btn" id="btn-impossible">🚫 Not Possible</button>
             <button class="game-btn" id="btn-rules">❓ How to Play</button>
         </div>
     </main>
@@ -244,27 +245,155 @@
 
     <script>
         // --- PUZZLE DATA ---
+        // Normal puzzles are designed for a quick answer (about 10 seconds).
         const normalPuzzleBank = [
-            [1, 2, 3, 4], [2, 3, 4, 8], [2, 2, 3, 8], [3, 3, 4, 6], [1, 2, 6, 6],
-            [2, 4, 4, 8], [2, 3, 5, 6], [3, 4, 5, 7], [1, 4, 5, 6], [2, 3, 6, 9],
-            [4, 6, 8, 9], [3, 5, 7, 8], [1, 2, 7, 9], [2, 4, 5, 8], [3, 4, 6, 8]
+            { numbers: [1, 2, 3, 4], target: 10 },
+            { numbers: [1, 2, 3, 6], target: 15 },
+            { numbers: [2, 3, 4, 5], target: 10 },
+            { numbers: [1, 3, 4, 4], target: 16 },
+            { numbers: [2, 2, 3, 8], target: 15 },
+            { numbers: [1, 2, 5, 8], target: 20 },
+            { numbers: [2, 3, 5, 6], target: 24 },
+            { numbers: [2, 4, 5, 8], target: 18 },
+            { numbers: [1, 3, 6, 9], target: 18 },
+            { numbers: [3, 4, 5, 7], target: 14 },
+            { numbers: [2, 4, 4, 8], target: 12 },
+            { numbers: [1, 2, 7, 9], target: 20 }
         ];
 
-        // Specific puzzles for Hard mode where order matters and brackets are essential
+        // Hard puzzles keep number order fixed and require exactly one bracket
+        // pair. They are intended to take no more than about 30–60 seconds.
         const hardPuzzleBank = [
-            [6, 8, 4, 2], // 6 * 8 / ( 4 - 2 )
-            [8, 4, 6, 3], // ( 8 + 4 ) * 6 / 3
-            [6, 2, 4, 8], // ( 6 - 2 ) * 4 + 8
-            [4, 2, 8, 2], // ( 4 + 2 ) * 8 / 2
-            [9, 3, 5, 3], // ( 9 / 3 + 5 ) * 3
-            [5, 1, 4, 8], // ( 5 - 1 ) * 4 + 8
-            [7, 1, 3, 6], // ( 7 - 1 ) * 3 + 6
-            [5, 5, 2, 8]  // ( 5 / 5 + 2 ) * 8
+            { numbers: [6, 8, 4, 2], target: 22 },
+            { numbers: [8, 4, 6, 3], target: 24 },
+            { numbers: [9, 3, 4, 2], target: 14 },
+            { numbers: [6, 2, 5, 3], target: 17 },
+            { numbers: [4, 2, 7, 3], target: 39 },
+            { numbers: [8, 4, 3, 2], target: 8 },
+            { numbers: [7, 1, 4, 2], target: 12 },
+            { numbers: [5, 3, 6, 2], target: 24 }
         ];
+
+        // A sample answer is kept for each locked-order hard puzzle.
+        // Every division shown here has a whole-number result.
+        const hardPuzzleSolutions = {
+            '22|6,8,4,2': '6 + 8 × (4 − 2) = 22',
+            '24|8,4,6,3': '(8 + 4) × 6 ÷ 3 = 24',
+            '14|9,3,4,2': '(9 ÷ 3 + 4) × 2 = 14',
+            '17|6,2,5,3': '(6 − 2) × 5 − 3 = 17',
+            '39|4,2,7,3': '(4 + 2) × 7 − 3 = 39',
+            '8|8,4,3,2': '(8 + 4) ÷ 3 × 2 = 8',
+            '12|7,1,4,2': '(7 − 1) × 4 ÷ 2 = 12',
+            '24|5,3,6,2': '(5 + 3) × 6 ÷ 2 = 24'
+        };
+
+        // Finds a normal-mode solution using exactly the same rules as the game:
+        // subtraction stays non-negative and every division result is a whole number.
+        function findWholeNumberSolution(numbers, target) {
+            const search = (items) => {
+                if (items.length === 1) return items[0].value === target ? items[0].expr : null;
+
+                for (let i = 0; i < items.length; i++) {
+                    for (let j = i + 1; j < items.length; j++) {
+                        const a = items[i], b = items[j];
+                        const rest = items.filter((_, index) => index !== i && index !== j);
+                        const bigger = a.value >= b.value ? a : b;
+                        const smaller = a.value >= b.value ? b : a;
+                        const candidates = [
+                            { value: a.value + b.value, expr: `(${a.expr} + ${b.expr})` },
+                            { value: a.value * b.value, expr: `(${a.expr} × ${b.expr})` },
+                            { value: bigger.value - smaller.value, expr: `(${bigger.expr} − ${smaller.expr})` }
+                        ];
+
+                        if (b.value !== 0 && a.value % b.value === 0) {
+                            candidates.push({ value: a.value / b.value, expr: `(${a.expr} ÷ ${b.expr})` });
+                        }
+                        if (a.value !== 0 && b.value % a.value === 0) {
+                            candidates.push({ value: b.value / a.value, expr: `(${b.expr} ÷ ${a.expr})` });
+                        }
+
+                        for (const candidate of candidates) {
+                            const answer = search([...rest, candidate]);
+                            if (answer) return answer;
+                        }
+                    }
+                }
+                return null;
+            };
+
+            return search(numbers.map(value => ({ value, expr: String(value) })));
+        }
+
+        // Evaluates hard-mode expressions while rejecting division that creates
+        // a fraction at any intermediate step.
+        function evaluateWholeNumberExpression(expression) {
+            let position = 0;
+
+            const skipSpaces = () => {
+                while (expression[position] === ' ') position++;
+            };
+            const parseNumber = () => {
+                skipSpaces();
+                let digits = '';
+                while (/\d/.test(expression[position] || '')) digits += expression[position++];
+                if (!digits) throw new Error('Expected a number');
+                return Number(digits);
+            };
+            const parseFactor = () => {
+                skipSpaces();
+                if (expression[position] === '(') {
+                    position++;
+                    const value = parseAddSubtract();
+                    skipSpaces();
+                    if (expression[position] !== ')') throw new Error('Missing closing bracket');
+                    position++;
+                    return value;
+                }
+                return parseNumber();
+            };
+            const parseMultiplyDivide = () => {
+                let value = parseFactor();
+                while (true) {
+                    skipSpaces();
+                    const operator = expression[position];
+                    if (operator !== '*' && operator !== '/') break;
+                    position++;
+                    const right = parseFactor();
+                    if (operator === '*') {
+                        value *= right;
+                    } else {
+                        if (right === 0 || !Number.isInteger(value) || !Number.isInteger(right) || value % right !== 0) {
+                            const error = new Error('Division must give a whole number');
+                            error.code = 'NON_WHOLE_DIVISION';
+                            throw error;
+                        }
+                        value /= right;
+                    }
+                }
+                return value;
+            };
+            const parseAddSubtract = () => {
+                let value = parseMultiplyDivide();
+                while (true) {
+                    skipSpaces();
+                    const operator = expression[position];
+                    if (operator !== '+' && operator !== '-') break;
+                    position++;
+                    const right = parseMultiplyDivide();
+                    value = operator === '+' ? value + right : value - right;
+                }
+                return value;
+            };
+
+            const result = parseAddSubtract();
+            skipSpaces();
+            if (position !== expression.length) throw new Error('Unexpected symbol');
+            return result;
+        }
 
         // --- GAME STATE ---
         let currentMode = 'normal';
-        let currentPuzzle = []; 
+        let currentPuzzle = { numbers: [], target: 10 }; 
         let currentCards = [];  
         let selectedCardIndex = null;
         let selectedOperator = null;
@@ -278,6 +407,7 @@
         const eqBuilder = document.querySelector('.equation-builder');
         const opBtns = document.querySelectorAll('.op-btn');
         const streakEl = document.getElementById('streak-count');
+        const targetEl = document.getElementById('target-value');
         
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
@@ -303,12 +433,16 @@
         }));
 
         function loadNewPuzzle() {
-            const bank = currentMode === 'normal' ? normalPuzzleBank : hardPuzzleBank;
+            const bank = currentMode === 'normal'
+                ? normalPuzzleBank.filter(puzzle => findWholeNumberSolution(puzzle.numbers, puzzle.target))
+                : hardPuzzleBank.filter(puzzle => hardPuzzleSolutions[puzzle.target + '|' + puzzle.numbers.join(',')]);
             const randomIndex = Math.floor(Math.random() * bank.length);
-            currentPuzzle = [...bank[randomIndex]];
+            const selectedPuzzle = bank[randomIndex];
+            currentPuzzle = { numbers: [...selectedPuzzle.numbers], target: selectedPuzzle.target };
+            targetEl.innerText = currentPuzzle.target;
             
             if (currentMode === 'normal') {
-                currentPuzzle.sort(() => Math.random() - 0.5); // Shuffle for normal mode
+                currentPuzzle.numbers.sort(() => Math.random() - 0.5); // Shuffle for normal mode
                 resetNormalPuzzle();
             } else {
                 buildHardModeUI();
@@ -317,7 +451,7 @@
 
         // --- NORMAL MODE LOGIC ---
         function resetNormalPuzzle() {
-            currentCards = [...currentPuzzle];
+            currentCards = [...currentPuzzle.numbers];
             clearSelections();
             renderCards();
         }
@@ -390,12 +524,12 @@
 
         function checkNormalWin() {
             if (currentCards.length === 1) {
-                if (currentCards[0] === 24) {
+                if (currentCards[0] === currentPuzzle.target) {
                     streak++; streakEl.innerText = streak;
-                    showModal("🎉 Target 24 Reached!", "Brilliant math skills! You combined all the numbers perfectly.", true);
+                    showModal(`🎉 Target ${currentPuzzle.target} Reached!`, "Brilliant math skills! You combined all the numbers perfectly.", true);
                 } else {
                     streak = 0; streakEl.innerText = streak;
-                    showModal("Not quite 24!", `You ended up with ${currentCards[0]}. Let's try that puzzle again.`, false);
+                    showModal(`Not quite ${currentPuzzle.target}!`, `You ended up with ${currentCards[0]}. Let's try that puzzle again.`, false);
                     resetNormalPuzzle();
                 }
             }
@@ -413,7 +547,7 @@
                 // Number
                 const numEl = document.createElement('div');
                 numEl.className = 'hm-num';
-                numEl.innerText = currentPuzzle[i];
+                numEl.innerText = currentPuzzle.numbers[i];
                 eqBuilder.appendChild(numEl);
                 // Post-number bracket
                 eqBuilder.appendChild(createBracketSlot(i * 2 + 1));
@@ -432,10 +566,10 @@
                 }
             }
             
-            // Equals 24 static element
+            // Equals-target static element
             const equalsEl = document.createElement('div');
             equalsEl.className = 'hm-equals';
-            equalsEl.innerText = '= 24';
+            equalsEl.innerText = '= ' + currentPuzzle.target;
             eqBuilder.appendChild(equalsEl);
         }
 
@@ -459,8 +593,8 @@
                 let b1 = document.querySelector(`.bracket-slot[data-index="${i*2}"]`).innerText;
                 let b2 = document.querySelector(`.bracket-slot[data-index="${i*2+1}"]`).innerText;
                 
-                exprToEval += b1 + currentPuzzle[i] + b2;
-                displayExpr += b1 + currentPuzzle[i] + b2;
+                exprToEval += b1 + currentPuzzle.numbers[i] + b2;
+                displayExpr += b1 + currentPuzzle.numbers[i] + b2;
 
                 if (i < 3) {
                     let opUI = document.querySelector(`.hm-op-slot[data-index="${i}"]`).innerText;
@@ -489,18 +623,21 @@
 
             // Evaluation
             try {
-                let result = new Function('return ' + exprToEval)();
-                result = Math.round(result * 1000) / 1000; // prevent floating point weirdness
+                let result = evaluateWholeNumberExpression(exprToEval);
                 
-                if (result === 24) {
+                if (result === currentPuzzle.target) {
                     streak++; streakEl.innerText = streak;
-                    showModal("🎉 Target 24 Reached!", `Correct! <br><strong>${displayExpr} = 24</strong>`, true);
+                    showModal(`🎉 Target ${currentPuzzle.target} Reached!`, `Correct! <br><strong>${displayExpr} = ${currentPuzzle.target}</strong>`, true);
                 } else {
                     streak = 0; streakEl.innerText = streak;
-                    showModal("Not quite 24!", `Your equation equals ${result}.<br><br><small>${displayExpr} = ${result}</small>`, false);
+                    showModal(`Not quite ${currentPuzzle.target}!`, `Your equation equals ${result}.<br><br><small>${displayExpr} = ${result}</small>`, false);
                 }
             } catch(e) {
-                showModal("Math Error!", "That equation doesn't make sense. Check where you placed your brackets!", false);
+                if (e.code === 'NON_WHOLE_DIVISION') {
+                    showModal("Whole Numbers Only!", "Each division step must give a whole number. Try a different operation or move your brackets.", false);
+                } else {
+                    showModal("Math Error!", "That equation doesn't make sense. Check where you placed your brackets!", false);
+                }
             }
         });
 
@@ -532,12 +669,29 @@
         
         document.getElementById('btn-skip').addEventListener('click', () => { streak = 0; streakEl.innerText = streak; loadNewPuzzle(); });
 
+        document.getElementById('btn-impossible').addEventListener('click', () => {
+            const solution = currentMode === 'normal'
+                ? findWholeNumberSolution(currentPuzzle.numbers, currentPuzzle.target)
+                : hardPuzzleSolutions[currentPuzzle.target + '|' + currentPuzzle.numbers.join(',')];
+
+            if (solution) {
+                streak = 0; streakEl.innerText = streak;
+                showModal(
+                    "This one is possible!",
+                    `Here is one sample answer using whole-number division:<br><br><strong>${solution}${currentMode === 'normal' ? ' = ' + currentPuzzle.target : ''}</strong>`,
+                    false
+                );
+            } else {
+                showModal("You spotted it!", "This puzzle has no solution under the whole-number division rule. We’ll replace it with a new one.", true);
+            }
+        });
+
         document.getElementById('btn-rules').addEventListener('click', () => {
             modalTitle.innerText = "How to Play";
             if(currentMode === 'normal') {
-                modalDesc.innerHTML = "1. Click a number.<br>2. Choose an operator (+, -, ×, ÷).<br>3. Click another number.<br><br>Keep combining numbers until you only have <strong>one card left</strong>, and it equals exactly <strong>24</strong>!";
+                modalDesc.innerHTML = "1. Click a number.<br>2. Choose an operator (+, -, ×, ÷).<br>3. Click another number.<br><br>Keep combining numbers until you only have <strong>one card left</strong>, and it equals the displayed <strong>target number</strong>!";
             } else {
-                modalDesc.innerHTML = "The numbers are locked in place!<br><br>1. Tap the dashed circles to cycle through operations (+, -, ×, ÷).<br>2. Tap the dashed tall boxes to place exactly <strong>one</strong> pair of brackets `( )`.<br>3. Hit <strong>Check Math</strong> to see if it equals 24!";
+                modalDesc.innerHTML = "The numbers are locked in place!<br><br>1. Tap the dashed circles to cycle through operations (+, -, ×, ÷).<br>2. Tap the dashed tall boxes to place exactly <strong>one</strong> pair of brackets `( )`.<br>3. Hit <strong>Check Math</strong> to see if it equals the displayed target!";
             }
             modalCloseBtn.innerText = "Got it!";
             modalCloseBtn.onclick = () => modal.classList.remove('active');

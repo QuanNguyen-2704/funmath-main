@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary &amp; Number Bases | Math Adventure Hub</title>
+    <meta name="description" content="Build binary and other base numbers with place-value cards. Discover why each digit matters by watching the total and remaining space.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🔢%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #2d3142; --muted: #596477; --purple: #6946c7; --teal: #087e76; --line: #e3e4f0; }
+        * { box-sizing: border-box; }
+        body { margin: 0; color: var(--ink); font: 600 1rem/1.5 'Quicksand', system-ui, sans-serif; background: radial-gradient(circle at 0 60%, #fff2b9, transparent 32rem), linear-gradient(135deg, #eaf6ff, #f5f0ff); }
+        button, input, select { font: inherit; color: inherit; }
+        button, select { cursor: pointer; }
+        button, .home-link { min-height: 46px; }
+        button { border: 2px solid var(--line); border-radius: 14px; background: white; padding: 10px 18px; font-weight: 700; }
+        button:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--purple); }
+        button:disabled { cursor: default; opacity: .5; }
+        :focus-visible { outline: 3px solid #302275; outline-offset: 4px; }
+        [hidden] { display: none !important; }
+        h1, h2, h3, .big-number, .digit, .weight { font-family: 'Baloo 2', system-ui, sans-serif; }
+        h1, h2, h3, p { margin-top: 0; }
+        .topbar { display: flex; align-items: center; gap: 20px; padding: 16px max(20px, calc((100vw - 1200px) / 2)); color: white; background: linear-gradient(110deg, #6946c7, #bd4c78); }
+        .home-link { display: inline-flex; align-items: center; flex-shrink: 0; padding: 8px 16px; border: 2px solid #ffffff80; border-radius: 99px; color: white; text-decoration: none; }
+        .topbar h1 { margin: 0; font-size: clamp(1.3rem, 4vw, 2rem); line-height: 1.2; }
+        .topbar p { margin: 2px 0 0; font-size: .9rem; }
+        main { max-width: 1240px; margin: auto; padding: 28px 20px 50px; }
+        .intro { margin-bottom: 20px; }
+        .intro h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); margin-bottom: 4px; }
+        .intro p { max-width: 850px; color: var(--muted); margin-bottom: 0; }
+        .panel { background: white; border: 2px solid #e6e2f4; border-radius: 24px; box-shadow: 0 7px 0 #dfdaf0, 0 12px 28px #2d314210; }
+        .settings { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; padding: 20px; margin-bottom: 24px; }
+        .field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 160px; }
+        label { font-size: .9rem; }
+        input, select { min-height: 48px; width: 100%; padding: 10px 12px; border: 2px solid #cfcbe2; border-radius: 12px; background: #fcfbff; }
+        .target-form { display: flex; gap: 10px; align-items: end; flex: 2 1 330px; }
+        .primary { color: white; background: var(--purple); border-color: var(--purple); box-shadow: 0 4px 0 #45288b; }
+        .secondary { color: var(--teal); background: #e7f8f5; border-color: #b1e0da; }
+        .challenge { padding: clamp(16px, 3vw, 28px); }
+        .mission { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 20px; border-bottom: 2px solid var(--line); }
+        .eyebrow { color: var(--muted); font-size: .85rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+        .target { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+        .big-number { font-size: 3.4rem; line-height: 1.1; color: var(--purple); }
+        .base-tag { padding: 5px 12px; color: #4d328c; background: #eee7ff; border-radius: 99px; }
+        .stats { display: flex; flex-wrap: wrap; gap: 24px; }
+        .stat strong { display: block; font: 800 1.7rem 'Baloo 2', system-ui, sans-serif; }
+        .stat span { color: var(--muted); font-size: .85rem; }
+        .meter-label { display: flex; justify-content: space-between; margin: 18px 0 5px; font-size: .85rem; }
+        meter { display: block; width: 100%; height: 20px; accent-color: var(--teal); }
+        meter::-webkit-meter-bar { background: #edf0f5; border: none; border-radius: 20px; }
+        meter::-webkit-meter-optimum-value { background: #21b8a7; border-radius: 20px; }
+        .board-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; align-items: baseline; margin: 22px 0 10px; }
+        .board-heading h2 { margin: 0; font-size: 1.3rem; }
+        .board-heading p { margin: 0; color: var(--muted); font-size: .85rem; }
+        .places-scroll { overflow-x: auto; padding: 5px 4px 12px; border-radius: 16px; }
+        .places { display: flex; gap: 10px; min-width: min-content; }
+        .place { flex: 1 0 108px; text-align: center; border: 2px solid var(--line); border-radius: 18px; overflow: hidden; background: #f9f9fd; }
+        .place.active { border-color: var(--purple); box-shadow: 0 0 0 2px #e8ddff; background: #f7f2ff; }
+        .place.filled { background: #eaf9f5; border-color: #92d6c9; }
+        .place.wrong { background: #fff0ed; border-color: #d84c45; }
+        .place-label { display: block; min-height: 30px; background: #edf0f7; font-size: .74rem; padding: 5px; }
+        .active .place-label { background: var(--purple); color: white; }
+        .wrong .place-label { background: #c83c36; color: white; }
+        .power { color: var(--muted); margin: 8px 0 0; font-size: .85rem; }
+        .weight { font-size: 1.65rem; line-height: 1.1; }
+        .digit { display: block; margin: 12px auto 6px; width: 62px; height: 62px; line-height: 58px; font-size: 2.5rem; background: white; border: 2px dashed #c8bfdf; border-radius: 14px; }
+        .filled .digit { border-style: solid; border-color: #92d6c9; }
+        .wrong .digit { border-color: #d84c45; }
+        .groups { min-height: 22px; display: flex; gap: 3px; justify-content: center; align-items: center; flex-wrap: wrap; padding: 0 5px; }
+        .group-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); }
+        .contribution { font-size: .78rem; padding: 7px 3px 12px; }
+        .decision { padding: 18px; background: #f7f4ff; border-radius: 18px; margin-top: 12px; }
+        .decision h3 { margin-bottom: 4px; font-size: 1.25rem; }
+        .decision p { color: var(--muted); margin-bottom: 12px; }
+        .digits { display: flex; flex-wrap: wrap; gap: 10px; }
+        .digit-choice { min-width: 60px; min-height: 58px; font: 800 1.7rem 'Baloo 2', system-ui, sans-serif; background: white; box-shadow: 0 3px 0 #ded5ef; }
+        .capacity { margin: 16px 0 0; padding: 12px 16px; border: 2px dashed #bcc9d6; border-radius: 14px; background: #f7fafc; }
+        .capacity.fail { background: #fff0ed; border-color: #d84c45; }
+        .feedback { margin-top: 18px; padding: 16px 18px; background: #eef5ff; border-left: 5px solid #497bbc; border-radius: 12px; }
+        .feedback p { margin: 0; }
+        .feedback.success { background: #e7f8ed; border-color: #278346; }
+        .feedback.fail { background: #fff0ed; border-color: #c83c36; }
+        .equation { margin: 18px 0 0; padding: 16px; background: #fffae8; border-radius: 14px; overflow-wrap: anywhere; }
+        .equation strong { display: block; font-size: 1.3rem; margin-bottom: 6px; }
+        .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+        .learn { margin-top: 26px; padding: 20px 24px; }
+        summary { cursor: pointer; font: 800 1.3rem 'Baloo 2', system-ui, sans-serif; }
+        .learn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 16px; }
+        .learn h3 { font-size: 1.15rem; margin-bottom: 6px; }
+        .learn p { margin-bottom: 10px; }
+        .example { background: #f6f2ff; border-radius: 14px; padding: 16px; }
+        .hint { color: var(--muted); font-size: .88rem; }
+        footer { padding: 28px 0 0; text-align: center; font-size: .9rem; color: var(--muted); }
+        @media (max-width: 620px) {
+            main { padding: 18px 12px 30px; }
+            .topbar { padding: 14px 12px; gap: 12px; }
+            .topbar p { display: none; }
+            .settings { padding: 16px; gap: 12px; }
+            .field { flex-basis: 130px; }
+            .target-form { flex-basis: 100%; }
+            .target-form button { padding-inline: 12px; }
+            .stats { gap: 20px; }
+            .learn-grid { grid-template-columns: 1fr; gap: 12px; }
+            .place { flex-basis: 94px; }
+        }
+        @media (prefers-reduced-motion: reduce) { button:hover:not(:disabled) { transform: none; } }
+    </style>
+    <script src="number-bases.js" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a class="home-link" href="index.html#number-bases">← Hub</a>
+        <div><h1>Binary &amp; Number Bases</h1><p>A place for every digit. A value for every place.</p></div>
+    </header>
+    <main>
+        <section class="intro" aria-labelledby="intro-title">
+            <h2 id="intro-title">Build a number, one place at a time.</h2>
+            <p>Choose a base and your biggest place. Work from left to right: put a digit in each box to make the base-10 target. Watch what the empty places can still hold!</p>
+        </section>
+        <section class="settings panel" aria-label="Challenge settings">
+            <div class="field"><label for="base">Number base</label><select id="base">
+                <option value="2">Base 2 · Binary</option><option value="3">Base 3</option><option value="4">Base 4</option><option value="5">Base 5</option><option value="6">Base 6</option><option value="7">Base 7</option><option value="8">Base 8</option><option value="9">Base 9</option><option value="10">Base 10 · Decimal</option>
+            </select></div>
+            <div class="field"><label for="highest">Highest place value</label><select id="highest"></select></div>
+            <form id="target-form" class="target-form">
+                <div class="field"><label for="target-input">Your base-10 number (0–9999)</label><input id="target-input" type="text" inputmode="numeric" pattern="[0-9]{1,4}" maxlength="4" required value="23"></div>
+                <button type="submit" class="secondary">Build this number</button>
+            </form>
+        </section>
+        <section class="challenge panel" aria-label="Place-value challenge">
+            <div class="mission">
+                <div><div class="eyebrow">Make this base-10 number</div><div class="target"><span id="target" class="big-number">23</span><span id="base-tag" class="base-tag">using base 2</span></div></div>
+                <div class="stats"><div class="stat"><strong id="built">0</strong><span>Built so far</span></div><div class="stat"><strong id="remaining">23</strong><span id="remaining-label">Still needed</span></div></div>
+            </div>
+            <div class="meter-label"><span>Building towards the target</span><span id="meter-text">0 of 23</span></div>
+            <meter id="total-meter" min="0" max="23" value="0" aria-label="Built total towards target"></meter>
+            <div class="board-heading"><h2>Your place-value boxes</h2><p>Biggest → smallest · swipe to see every place</p></div>
+            <div class="places-scroll" role="region" aria-label="Place-value boxes, scroll horizontally" tabindex="0"><div id="places" class="places"></div></div>
+            <div id="decision" class="decision"><h3 id="decision-title"></h3><p id="decision-help"></p><div id="digits" class="digits" role="group" aria-labelledby="decision-title"></div></div>
+            <p id="capacity" class="capacity"></p>
+            <div id="feedback" class="feedback" role="status" aria-live="polite" aria-atomic="true"><p id="feedback-text"></p></div>
+            <div id="equation" class="equation" hidden></div>
+            <div class="actions"><button id="restart">↻ Start again</button><button id="new-number" class="primary">New number →</button></div>
+        </section>
+        <details class="learn panel" open>
+            <summary>How do number bases work?</summary>
+            <div class="learn-grid">
+                <div><h3>Same number, different places</h3><p id="base-explanation"></p><p>Each step to the left makes a place <strong id="place-multiplier">2 times</strong> as big. A digit tells you how many groups of that size to use.</p><p class="hint">A 0 keeps a place empty. Zeros at the front do not change the number. All place values and totals shown here are in base 10.</p></div>
+                <div class="example"><h3>A worked example</h3><p id="example"></p><p class="hint">If a digit is too small, the places on the right may not hold enough. If it is too big, you pass the target. Start again and try a different digit.</p></div>
+            </div>
+        </details>
+        <noscript><p>This activity needs JavaScript enabled to build numbers.</p></noscript>
+        <footer>Made with 💙 by Teacher Quan Nguyen · Math Adventure Hub</footer>
+    </main>
+</body>
+</html>

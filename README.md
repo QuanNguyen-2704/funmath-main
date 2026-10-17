@@ -23,6 +23,15 @@ The hub is divided into core learning modules, each featuring completely custom-
 ### 🔺 Strategy & Planning
 *   **Chess:** A fully playable drag-and-drop chess board featuring a medieval UI, valid move highlighting, and inline SVG pieces. 
 
+### 🔢 Binary & Number Bases
+*   **Place-Value Builder:** Convert a base-10 target into bases 2–10 by choosing digits from left to right. Choose the highest place (for example 16, 32, or 64 in binary), use a random or custom target, and watch the running total and remaining capacity. An incorrect digit explains why the target cannot fit and offers a restart of the same challenge. Completed numbers show their place-value expansion.
+
+Run the base-conversion regression checks with Node.js (no installation needed):
+
+```sh
+node --test tests/number-bases.test.cjs
+```
+
 ---
 
 ## 🛠️ Tech Stack & Architecture

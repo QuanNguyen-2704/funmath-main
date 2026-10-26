@@ -22,6 +22,23 @@ The hub is divided into core learning modules, each featuring completely custom-
 
 ### 🔺 Strategy & Planning
 *   **Chess:** A fully playable drag-and-drop chess board featuring a medieval UI, valid move highlighting, and inline SVG pieces. 
+*   **Power Grid (Local & Online):** A two-player rectangle game on boards with power-of-two side lengths (1–16). Shade an empty rectangle whose area is a power of two; the player who shades the last square loses. Includes a two-corner preview, area explanation, move history, keyboard navigation, and online room codes through the same Firebase project as Carronade.
+
+### Power Grid quick start
+
+- Open `power-grid.html` for two-player pass-and-play on one device. Local play does not load Firebase and works without an internet connection; system fonts replace the optional Google Fonts when offline.
+- Serve the repository with `python -m http.server 8000` or VS Code Live Server for online play. Open `http://localhost:8000/power-grid.html?mode=online`, create a room, and send the invite link/code to your friend. Friends on other computers should use the deployed GitHub Pages URL (a localhost link only works on the host computer).
+- A guest opens the online page and enters the six-character code, or opens the invite and presses **Join friend**. Each room has exactly two seats. Session storage recovers your seat after refreshing the same tab. Leaving keeps your seat reserved; create a new room for a different pair of students.
+- Select rows and columns before starting a local game or creating a room. Online board dimensions stay fixed for that room. Both players approve rematches; the starting player alternates.
+- Shared rules live in `power-grid-rules.js`; `power-grid-online.js` lazily loads the existing Firebase SDK version and public project configuration. Rooms live at `rooms/power-grid-CODE`, leaving Carronade and Symmetry rooms untouched. Moves, seat claims, and rematch votes are transactional, with round/revision checks to reject stale requests.
+- Firebase must allow client reads and writes to those room paths, as the existing code-sharing games do. This follows the repo's trusted classroom model; client-side seat tokens and validation are not authenticated, server-enforced anti-cheat. No database rules or existing Firebase data are changed by this PR.
+- The live database returned **Permission denied** during development. Follow [Power Grid Firebase setup](docs/power-grid-firebase.md) to merge the narrowly scoped room access conditions into the existing rules before online use. This document also includes a two-browser acceptance checklist.
+
+Run the Power Grid regression checks without installing dependencies:
+
+```sh
+node --test tests/power-grid.test.cjs
+```
 
 ---
 

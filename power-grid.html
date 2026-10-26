@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Grid | Math Adventure Hub</title>
+    <meta name="description" content="A two-player rectangle strategy game: shade a power-of-two area, but avoid the last square. Play on one device or online with a room code.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="power-grid.css">
+    <script src="power-grid-rules.js" defer></script>
+    <script src="power-grid-online.js" defer></script>
+    <script src="power-grid-ui.js" defer></script>
+</head>
+<body>
+    <header class="topbar"><a href="index.html#Strategy" class="home">← Hub</a><div><h1>⚡ Power Grid</h1><p>Think in rectangles. Leave the last square!</p></div></header>
+    <main>
+        <div class="intro"><span class="eyebrow">A game for two clever planners</span><h2>Shade a power of 2.<br>Save the last square for your friend.</h2><p>Take turns shading empty rectangles. Their areas must be 1, 2, 4, 8, 16, … squares. <strong>Whoever shades the last square loses.</strong></p></div>
+        <div class="mode-tabs" role="group" aria-label="Play mode"><button id="mode-local" aria-pressed="true">👥 Same device</button><button id="mode-online" aria-pressed="false">🌐 Online friends</button></div>
+        <section class="panel setup" aria-labelledby="setup-heading">
+            <div class="setup-heading"><h2 id="setup-heading">Set up your board</h2><span id="mode-note">Pass the device after each turn.</span></div>
+            <div class="settings">
+                <div class="field"><label for="rows">Rows</label><select id="rows"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select></div>
+                <span class="times" aria-hidden="true">×</span>
+                <div class="field"><label for="cols">Columns</label><select id="cols"><option>1</option><option>2</option><option selected>4</option><option>8</option><option>16</option></select></div>
+                <button id="start-local" class="primary">Start a new local game</button>
+                <button id="create-room" class="primary" hidden>Create online room</button>
+            </div>
+            <form id="join-form" class="join-form" hidden><label for="join-code">Have a room code?</label><input id="join-code" placeholder="ABC234" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" required aria-label="Six-character room code"><button type="submit">Join friend</button></form>
+            <div id="room-details" class="room-details" hidden><div><span class="eyebrow">Share this room code</span><strong id="room-code"></strong><p id="seat-label"></p></div><div class="share"><label for="share-link">Invite link</label><input id="share-link" readonly><button id="copy-link">Copy invite link</button></div><button id="leave-room">Leave room</button></div>
+            <p id="lobby-message" class="lobby-message" role="status" aria-live="polite"></p>
+        </section>
+        <div class="game-layout">
+            <section class="panel play-panel" aria-label="Power Grid game">
+                <div class="score-row"><div id="player-one" class="player p1"><span>● Player 1</span><strong id="p1-count">0 squares</strong></div><div class="remaining"><strong id="empty-count">16</strong><span>empty squares</span></div><div id="player-two" class="player p2"><span>■ Player 2</span><strong id="p2-count">0 squares</strong></div></div>
+                <div id="turn-status" class="turn-status" role="status" aria-live="polite" aria-atomic="true"></div>
+                <p id="board-instructions" class="hint">Tap one corner, then the opposite corner. For one square, tap it twice. Use arrow keys to move around the board.</p>
+                <div class="board-scroll"><div id="board" class="board" role="group" aria-label="Power Grid squares" aria-describedby="board-instructions"></div></div>
+                <div id="selection-summary" class="selection-summary" role="status" aria-live="polite" aria-atomic="true">Choose your first corner.</div>
+                <div class="actions"><button id="shade" class="primary" disabled>Shade rectangle</button><button id="clear-selection" disabled>Clear selection</button><button id="rematch" hidden>Play again</button></div>
+                <p id="game-message" class="game-message" role="status" aria-live="polite"></p>
+            </section>
+            <aside class="sidebar">
+                <section class="panel rules"><h2>How to play</h2><ol><li>Choose a rectangle of <strong>empty squares</strong>.</li><li>Its area must be a <strong>power of 2</strong>. One square is allowed: 2<sup>0</sup> = 1.</li><li>Check the preview, then press <strong>Shade rectangle</strong>.</li><li>Pass the turn. <strong>Shade the last square and you lose!</strong></li></ol><div class="powers" aria-label="Allowed areas"><span>1</span><span>2</span><span>4</span><span>8</span><span>16</span><span>32</span><span>64</span><span>128</span><span>256</span></div><p class="hint">Example: a 2 × 4 rectangle has area 8 = 2³. A 3 × 2 rectangle has area 6, so it is not allowed.</p></section>
+                <section class="panel history"><h2>Moves <span id="move-count">0</span></h2><p id="history-empty" class="hint">Your rectangles will appear here.</p><ol id="history-list"></ol></section>
+                <details class="panel practice"><summary>Try the small boards</summary><p>Start with 2 × 2, 1 × 4, or 2 × 4. Can you leave your friend with just one square?</p><p>Both board sides are powers of 2. Rectangles may touch earlier moves, but must never overlap them.</p></details>
+            </aside>
+        </div>
+        <noscript><p>Enable JavaScript to play Power Grid.</p></noscript>
+        <footer>Made with 💙 by Teacher Quan Nguyen · Math Adventure Hub</footer>
+    </main>
+</body>
+</html>
